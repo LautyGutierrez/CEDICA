@@ -1,0 +1,25 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% block head %}
+<title>Registro de Ecuestres</title>
+{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-sm mx-auto pt-8"> 
+<h1 class="text-2xl font-bold mb-4 text-center">Registro de Ecuestres</h1>
+<form action="{{ url_for('ecuestre.insertar_tupla_ecuestre') }}" method="POST" class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4">
+  {{ form.hidden_tag() }}  <!-- Esto agrega el campo CSRF -->
+  
+  {% call Form.render_form(form, action=form_action) %}
+
+  <div class="flex flex-col w-full gap-4 justify-around">
+    {{ Button.success("Registrar","submit")}}
+    {{ LinkButton.info("Volver", "/ecuestre/showEcuestre") }}
+  </div>
+  {% endcall %}
+
+</form>
+</div>
+{% endblock %}

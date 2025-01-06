@@ -1,0 +1,197 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title>Usuarios - CEDICA </title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex  justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Usuarios</h1>
+    </div>
+    <div class="flex  justify-center">
+      <p  class="mt-1 mb-4 mr-4 font-bold font-mono">
+          Sección de usuarios del sistema.
+      </p>
+    </div>
+    <div class="flex  justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {{ LinkButton.success("Crear Usuario", "/admin/users/create") }}
+        {{ LinkButton.warning("Ver Usuarios preRegistrados", "/admin/users/preRegisters") }}
+        {{ LinkButton.warning("Ver Usuarios eliminados", "/admin/users/deleteds") }}
+        {{ LinkButton.primary("Volver a inicio", "/admin", class="") }}
+      </div>
+  </div>
+    
+  </div>
+  <div class="flex flex-wrap justify-center">
+    <form method="get" action="/admin/users">
+      {{ Form.new_csrf_token() }}
+      <input class="rounded-lg" type="text" name="email" placeholder="Filtrar por email" value="{{ email or "" }}">
+      <select class="rounded-lg"  name="active">
+        <option value=""  {% if active=="" %}selected{% endif %}>Todos</option>
+        <option value="True" {% if active=="True" %}selected{% endif %}>Activos</option>
+        <option value="False" {% if active=="False" %}selected{% endif %}>No Activos</option>
+      </select>
+      <select class="rounded-lg" name="rol">
+        <option value="">Todos</option>
+        <option value="ADMINISTRACION" {% if roles=="ADMINISTRACION" %}selected{% endif %}>ADMINISTRACION</option>
+        <option value="VOLUNTARIADO" {% if roles=="VOLUNTARIADO" %}selected{% endif %}>VOLUNTARIADO</option>
+        <option value="ECUESTRE" {% if roles=="ECUESTRE" %}selected{% endif %}>ECUESTRE</option>
+        <option value="TECNICA" {% if roles=="TECNICA" %}selected{% endif %}>TECNICA</option>
+        <option value="SYSTEM_ADMIN" {% if roles=="SYSTEM_ADMIN" %}selected{% endif %}>SYSTEM_ADMIN</option>
+        <option value="SIN_ROL" {% if roles=="SIN_ROL" %}selected{% endif %}>SIN_ROL</option>
+      </select>
+      <select class="rounded-lg" name="order_by">
+        <option value="email" {% if order_by=="email" %}selected{% endif %}>Ordenar por email</option>
+        <option value="fecha" {% if order_by=="fecha" %}selected{% endif %}>Ordenar por fecha</option>
+      </select>
+      <input type="hidden" name="order" value="{{ order or 'asc' }}">
+
+
+      {{ Button.success("Buscar🔎","submit") }}
+
+      <button type="submit" name="toggle_order" value="{% if order == 'asc' %}desc{% else %}asc{% endif %}" class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+      focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+        {% if order == 'asc' %}
+        Cambiar a orden descendente
+        <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+          viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z" />
+        </svg>
+        {% else %}
+        Cambiar a orden ascendente
+        <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+          viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z" />
+        </svg>
+        {% endif %}
+      </button>
+      {{ LinkButton.warning("Borrar filtros", "/admin/users") }}
+    </form>
+  </div>
+  <div class="mt-4 mx-auto md:max-h-full">
+    {% call Table.Table() %}
+    {{ Table.TableHead(("Nombre","Apellido","Email", "Nombre de usuario", "Activa", "Rol", "Fecha de Registro","Acciones")) }}
+    <tbody>
+      {% if users|length == 0 %}
+      <tr>
+        <td class="text-center font-semibold" colspan="8">No hay usuarios</td>
+      </tr>
+      {% endif %}
+      {% for user, role in users %}
+      <tr>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ user.first_name }}</p>
+        </td>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ user.last_name }}</p>
+        </td>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ user.email }}</p>
+        </td>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center ">{{ user.alias }}</p>
+        </td>
+        {% if user.is_active %}
+        <td class="text-green-500">
+          <p class=" flex justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40px"
+              viewBox="0 0 24 24">
+              <g fill="none" stroke="green" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <path fill="green" fill-opacity="0"
+                  d="M3 12c0 -4.97 4.03 -9 9 -9c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9Z">
+                  <animate fill="freeze" attributeName="fill-opacity" dur="0.3s" values="0;0.3" />
+                </path>
+                <path stroke-dasharray="14" stroke-dashoffset="14" d="M8 12l3 3l5 -5">
+                  <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.4s" values="14;0" />
+                </path>
+              </g>
+            </svg></p>
+        </td>
+        {% else %}
+        <td class="text-red-500">
+          <p class=" flex justify-center "><svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40px"
+              viewBox="0 0 24 24">
+              <g fill="none" stroke="RED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <path fill="RED" fill-opacity="0" stroke-dasharray="64" stroke-dashoffset="64"
+                  d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z">
+                  <animate fill="freeze" attributeName="fill-opacity" begin="0.6s" dur="0.15s" values="0;0.3" />
+                  <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" />
+                </path>
+                <path stroke-dasharray="8" stroke-dashoffset="8" d="M12 12l4 4M12 12l-4 -4M12 12l-4 4M12 12l4 -4">
+                  <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.75s" dur="0.2s" values="8;0" />
+                </path>
+              </g>
+            </svg></p>
+        </td>
+        {% endif %}
+        <td class="text-base font-medium"><p class=" flex justify-center bg-lime-100 ring-2 ring-lime-300 rounded-md shadow-lg">{{ role.name }}</p></td>
+        <td class="text-base font-medium"><p class=" flex justify-center ">{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</p></td>
+        <td>
+          <div class="flex gap-2">
+            {{ LinkButton.info("Editar", "/admin/users/" ~ user.id ) }}
+            <form method="POST" action="/admin/users/{{ user.id }}/toggle_active" style="display: inline;">
+              {{ Form.new_csrf_token() }}
+              {% if user.is_active %}
+              {% set props1 = {"data-button-update-user": "", "data-username-update": user.username} %}
+              {{ Button.warning("Desactivar", type="submit", **props1) }}
+              {% else %}
+              {% set props2 = {"data-button-update-user": "", "data-username-update": user.username} %}
+              {{ Button.success("Activar", type="submit", **props2) }}
+              {% endif %}
+            </form>
+            <form method="POST" action="/admin/users/{{ user.id }}/delete" style="display: inline;">
+              {{ Form.new_csrf_token() }}
+              {% set props3 = {"data-button-delete-user": "", "data-username": user.username} %}
+              {{ Button.danger("Eliminar", type="submit", **props3) }}
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% endcall %}
+  </div>
+
+  {% if total %}<div class="mt-4 flex-none">
+    {% set query_args = (["email=" ~ email] if email else []) + (["active=" ~ active] if active else []) %}
+    {{ Pagination(page, per_page, total, query_args) }}
+  </div>{% endif %}
+  <div class="mt-4 flex justify-center">
+    <p>Mostrando {{ users|length }} de {{ total }} usuarios</p>
+  </div>
+</main>
+
+<script>
+
+  const deleteUserButtons = document.querySelectorAll('[data-button-delete-user]');
+
+  deleteUserButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const username = event.target.getAttribute('data-username');
+      if (!confirm(`¿Estás seguro de que quieres eliminar al usuario?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+
+  const updateUserButtons = document.querySelectorAll('[data-button-update-user]');
+
+  updateUserButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const username = event.target.getAttribute('data-username-update');
+      if (!confirm(`¿Estás seguro de que quieres cambiar el estado del usuario?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

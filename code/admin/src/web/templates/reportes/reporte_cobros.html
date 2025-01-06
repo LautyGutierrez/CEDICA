@@ -1,0 +1,50 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/table.html" as Table %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% from "_macros/pagination.html" import Pagination %}
+{% block head %}
+<title>Reporte de historico de cobros de miembros</title>
+{% endblock %}
+{% block content %}
+<main>
+    <div class="flex flex-col items-center justify-center mt-10">
+        <h1 class="text-3xl font-bold text-center mb-4">Historial de cobros de un miembro</h1>
+        <div class="mb-4">
+            {{ LinkButton.primary("Volver", "/reporte-cobros", class="mb-4") }}
+        </div>
+        {% call Table.Table(class="") %}
+            {{ Table.TableHead(["Nombre", "Apellido", "DNI", "Email", "Fecha", "Monto", "Descripción"], class="bg-blue-200", col_class="px-6 py-3") }}
+            <tbody>
+                {% if cobros|length == 0 %}
+                <tr>
+                <td class="text-center font-medium" colspan="6">No se encontraron reportes</td>
+                </tr>
+                {% endif %}
+                {% for cobro in cobros %}
+                    <tr class="border-b border-gray-200 py-2 text-center">
+                        <td class="text-lg px-6 py-4">{{ cobro[0] }}</td>
+                        <td class="text-lg px-6 py-4">{{ cobro[1] }}</td>
+                        <td class="text-lg px-6 py-4">{{ cobro[2] }}</td>
+                        <td class="text-lg px-6 py-4">{{ cobro[3] }}</td>
+                        <td class="text-lg px-6 py-4">{{ cobro[4] }}</td>
+                        <td class="text-lg px-6 py-4">{{ cobro[5] }}</td>
+                        <td class="text-lg px-6 py-4">{{ cobro[6] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% endcall %}
+        {% if total %}
+        <div class="mt-4 flex-none">
+            {% set query_args = (["fecha_desde=" ~ fecha_desde]) 
+                              + (["fecha_hasta=" ~ fecha_hasta]) 
+                              + (["miembro=" ~ miembro]) 
+                           
+                             %}
+            {{ Pagination(page, per_page, total, query_args) }}
+            <p class="justify-center text-center">Mostrando {{ cobros|length }} de {{ total }} cobros</p>
+        </div>
+        
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

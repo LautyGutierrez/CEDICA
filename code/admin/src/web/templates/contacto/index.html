@@ -1,0 +1,125 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/form.html" as Form %}
+
+{% block head %}
+  <title>Contacto - CEDICA</title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  
+  <div class="flex flex-col justify-center">
+    <div class="flex justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Contacto</h1>
+    </div>
+    <div class="flex justify-center">
+      <p class="mt-1 mb-4 mr-4 font-bold font-mono">
+        Sección de contactos del sistema CEDICA.
+      </p>
+    </div>
+    <div class="flex justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {{ LinkButton.primary("Volver a inicio", "/", class="") }}
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-center">
+      <form method="GET" action="{{ url_for('contacto.index') }}" class="flex flex-col gap-4">
+        <div>
+          <select name="estado" class="px-2 py-2 rounded-lg border-gray-300">
+            <option value="" {% if estado == "" %}selected{% endif %}>Todos los estados</option>
+            <option value="pendiente" {% if estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+            <option value="finalizado" {% if estado == "finalizado" %}selected{% endif %}>Finalizado</option>
+            <option value="en_proceso" {% if estado == "en_proceso" %}selected{% endif %}>En proceso</option>
+            <option value="rechazado" {% if estado == "rechazado" %}selected{% endif %}>Rechazado</option>
+            <option value="completado" {% if estado == "completado" %}selected{% endif %}>Completado</option>
+            <option value="cancelado" {% if estado == "cancelado" %}selected{% endif %}>Cancelado</option>
+          </select>
+          {{ Button.success("Buscar 🔎","submit") }}
+
+          <input type="hidden" name="orden" value="{{ orden }}">
+          <button type="submit" name="toggle_order" value="{% if order == 'asc' %}desc{% else %}asc{% endif %}" class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+        focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+            Ordenar por fecha de creacion
+            {% if orden == 'asc' %}
+            <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+              viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z" />
+            </svg>
+            {% else %}
+            <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+              viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z" />
+            </svg>
+            {% endif %}
+          </button>
+
+          {{ LinkButton.warning("Borrar filtros", "/contacto/index") }}
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-4 mx-auto">
+      {% call Table.Table(class="w-full max-w-sm mx-auto mt-8 rounded-lg p-4") %}
+        {{ Table.TableHead(["Nombre", "Apellido", "Email", "Fecha de creacion", "Estado", "Comentario", "Acciones"], class="bg-blue-200", col_class="px-6 py-3") }}
+        <tbody>
+          {% if contactos|length == 0 %}
+            <tr>
+              <td class="text-center font-medium" colspan="6">No se encontraron contactos</td>
+            </tr>
+          {% endif %}
+          {% for c in contactos %}
+            <tr class="border-b border-gray-200 py-2">
+              <td class="text-lg px-6 py-4">{{ c.nombre }}</td>
+              <td class="text-lg px-6 py-4">{{ c.apellido }}</td>
+              <td class="text-lg px-6 py-4">{{ c.email }}</td>
+              <td class="text-lg px-6 py-4">{{ c.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td class="text-lg px-6 py-4">{{ c.estado }}</td>
+              {% if c.comentario is not none %}
+                <td class="text-lg px-6 py-4">{{ c.comentario }}</td>
+              {% else %}
+               <td class="text-lg px-6 py-4">No hay comentario</td>
+              {% endif %}
+
+              <td class="px-6 py-4">
+                <div class="flex gap-2">
+                  {{ LinkButton.info("Ver mensaje", "/contacto/show_mensaje/" ~ c.id) }}
+                  {{ LinkButton.info("Editar contacto", "/contacto/update/" ~ c.id) }}
+                  <form action="{{ url_for('contacto.delete', contacto_id=c.id) }}" method="POST" class="inline">
+                    {{ Form.new_csrf_token() }} <!-- Esto agrega el campo CSRF -->
+                    {{ Button.danger("Borrar", "submit", class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600", **{"data-button-delete-contacto": ""}) }}
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      {% endcall %}
+    </div>
+
+    {% if total %}
+      <div class="mt-4 flex-none">
+        {% set query_args = (["criterio=" ~ criterio] if criterio else []) + (["busqueda=" ~ busqueda] if busqueda else []) + (["ordenar_por=" ~ ordenar_por] if ordenar_por else []) + (["orden=" ~ orden] if orden else []) %}
+        {{ Pagination(page, per_page, total, query_args) }}
+        <p class="justify-center text-center">Mostrando {{ contactos|length }} de {{ total }} contactos</p>
+      </div>
+    {% endif %}
+</main>
+
+<script>
+  /** @type {NodeListOf<HTMLButtonElement>} */
+  const deleteContact = document.querySelectorAll('[data-button-delete-contacto]');
+  deleteContact.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      if (!confirm(`¿Estás seguro de que quieres eliminar el contacto?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

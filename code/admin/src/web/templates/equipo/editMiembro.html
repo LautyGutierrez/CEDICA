@@ -1,0 +1,134 @@
+{% extends "_layouts/auth.html" %}
+{% import "_macros/formCuadrado.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title> Editar miembro</title>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center mt-10">
+    <h1 class="text-3xl font-bold text-center mb-2">Edición de miembro: </h1>
+    <h2> {{member.nombre}} {{member.apellido}} </h2>
+    <div class="flex flex-col items-center md:basis-1/2 shadow-2xl rounded-3xl">
+        <form method="POST" action="{{ url_for('member.edit_member', member_id = member.id,)}}"
+            class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4" id="editForm">
+            {{ Form.render_fields(form, longitud) }}
+            {% set props = {"data-button-edit": "", "data": "[\""+member.nombre+"\",
+            \""+member.apellido+"\"]"} %}
+            {{ Button.success("Editar","submit", **props) }}
+            {{ LinkButton.info("Volver", "/member") }}
+        </form>
+    </div>
+</div>
+<style>
+    label[for="csrf_token"] {
+        display: none;
+    }
+</style>
+<script>
+    const onlyText = (possibleText, mandatory = true) => {
+        if (!mandatory && possibleText.trim() === '')
+            return true;
+        return /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(possibleText.trim());
+    }
+
+    const onlyNumbers = (possibleNumber, mandatory = true) => {
+        if (!mandatory && possibleNumber.trim() === '')
+            return true;
+        return /^[0-9]+$/.test(possibleNumber.trim());
+    }
+
+    const validEmail = possibleEmail => {
+        return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(possibleEmail.trim()) && possibleEmail.trim() !== '';
+    }
+
+    const validDate = (possibleDate, mandatory = true) => {
+        if (!mandatory && possibleDate.trim() === '')
+            return true;
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(possibleDate.trim()))
+            return false;
+
+        const [year, month, day] = possibleDate.split("-").map(Number);
+        const date = new Date(year, month - 1, day);
+
+        return (
+            date.getFullYear() === year &&
+            date.getMonth() === month - 1 &&
+            date.getDate() === day
+        );
+    }
+
+    const validDomicile = possibleDomicile => {
+        return /^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s,.-]+$/.test(possibleDomicile.trim()) && possibleDomicile.trim() !== '';
+    }
+
+    const validationFunctionsInputs = {
+        nombre: (text) => onlyText(text, true),
+        apellido: (text) => onlyText(text, true),
+        localidad: (text) => onlyText(text, true),
+        domicilio: validDomicile,
+        dni: (number) => onlyNumbers(number, true),
+        email: validEmail,
+        fecha_inicio: (date) => validDate(date, true),
+        fecha_cese: (date) => validDate(date, false),
+        telefono_emergencia: (number) => onlyNumbers(number, true),
+        nombre_emergencia: (text) => onlyText(text, true),
+        obra_social: (text) => onlyText(text, false),
+        num_afiliado: (number) => onlyNumbers(number, false),
+        telefono: onlyNumbers
+    }
+
+    const validationFunctionsSelects = {
+        profesion: (text) => onlyText(text, true),
+        puesto_laboral: (text) => onlyText(text, true),
+        condicion: (text) => onlyText(text, true),
+    }
+
+    const validateForm = () => {
+        const form = document.getElementById('editForm');
+
+        const inputs = form.querySelectorAll('input');
+        const selects = form.querySelectorAll('select');
+
+        for (let input of inputs) {
+            const name = input.name;
+            const value = input.value;
+            const validationFunction = validationFunctionsInputs[name];
+
+            if (validationFunction && !validationFunction(value)) {
+                alert(`El campo ${name} es inválido. Corríjalo y vuelva a intentar.`);
+                return false;
+            }
+        }
+
+        for (let select of selects) {
+            const name = select.name;
+            const value = select.value;
+            const validationFunction = validationFunctionsSelects[name];
+
+            if (validationFunction && !validationFunction(value)) {
+                alert(`El campo ${name} es inválido. Corríjalo y vuelva a intentar.`);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    const editMemberButton = document.querySelector('[data-button-edit]');
+    editMemberButton.addEventListener('click', (event) => {
+        const validForm = validateForm();
+        if (validForm) {
+            const data = event.target.getAttribute('data');
+            const [nombre, apellido] = JSON.parse(data);
+            if (!confirm(`¿Estás seguro de querer editar la información del miembro ${nombre} ${apellido}?`))
+                event.preventDefault();
+        } else {
+            event.preventDefault();
+        }
+    })
+</script>
+{% endblock %}

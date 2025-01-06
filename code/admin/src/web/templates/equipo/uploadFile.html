@@ -1,0 +1,69 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title> Subir {{titulo}} - Miembros </title>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center mt-10">
+    <h1 class="text-3xl font-bold text-center mb-2">Subida de {{titulo}}</h1>
+    <div class="flex flex-col items-center justify-center mt-10"></div>
+    <div class="flex flex-col items-center md:basis-1/2 shadow-2xl rounded-3xl">
+        <form method="POST" action="{{ url_for(function , member_id=id) }}" enctype="multipart/form-data"
+            class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4">
+            {{ Form.render_fields(form)}}
+            {% set props = {"data-button-upload": "" } %}
+            {{ Button.success("Subir","submit", ** props) }}
+            {{ LinkButton.info("Volver", "/member/showFiles/" ~ id) }}
+        </form>
+    </div>
+</div>
+</div>
+<style>
+    label[for="csrf_token"] {
+        display: none;
+    }
+</style>
+<script>
+    const onlyText = possibleText => {
+        return /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(possibleText.trim()) && possibleText.trim() !== '';
+    }
+
+    const validTitle = possibleTitle => {
+        return /^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s,.-]+$/.test(possibleTitle.trim()) && possibleTitle.trim() !== '';
+    }
+
+    const validateForm = () => {
+        const title = document.getElementById("titulo").value;
+        const file = document.getElementById("archivo").value;
+        const type = document.getElementById("tipo_archivo").value;
+
+        if (file === "") {
+            alert("No se ha seleccionado un archivo. Por favor, seleccione un archivo.");
+            return false;
+        }
+
+        if (!validTitle(title)) {
+            alert("El título no es válido. Por favor, ingrese un título válido.");
+            return false;
+        }
+
+        if (!onlyText(type)) {
+            alert("El tipo de archivo no es válido. Por favor, seleccione un tipo de archivo válido.");
+            return false;
+        }
+        return true;
+    }
+
+    const uploadFileButton = document.querySelector("[data-button-upload]");
+    uploadFileButton.addEventListener("click", (event) => {
+        const validForm = validateForm();
+        if (!validForm) {
+            event.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

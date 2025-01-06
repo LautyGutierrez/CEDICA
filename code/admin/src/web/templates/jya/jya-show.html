@@ -1,0 +1,135 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title>Jinetes/Amazonas - CEDICA </title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex  justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Jinetes/Amazonas</h1>
+    </div>
+    <div class="flex  justify-center">
+      <p  class="mt-1 mb-4 mr-4 font-bold font-mono">
+          Sección de jinetes/amazonas del sistema CEDICA.
+      </p>
+    </div>
+    <div class="flex  justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {% if g.user_has_permissions(["jinete-y-amazona_create"]) %}
+          {{ LinkButton.success("Registrar jinete/amazonas", "/jya-register") }}
+        {% endif %}
+        {{ LinkButton.primary("Volver a inicio", "/", class="") }}
+      </div>
+  </div>
+  <div class="flex flex-wrap justify-center">
+    <form method="GET" action="{{ url_for('jya.jya_list_view') }}" class="flex flex-col gap-4">
+      <div>
+        <h0>Selecciona el criterio de búsqueda</h0>
+        <select name="criterio" class="px-2 py-2 rounded border border-gray-300">
+          <option value="name" {% if criterio == 'name' %}selected{% endif %}>Nombre</option>
+          <option value="lastname" {% if criterio == 'lastname' %}selected{% endif %}>Apellido</option>
+          <option value="document_number" {% if criterio == 'document_number' %}selected{% endif %}>DNI</option>
+          <option value="professionals" {% if criterio == 'professionals' %}selected{% endif %}>Profesional</option>
+        </select>
+        <input type="text" name="busqueda" placeholder="Buscar" value="{{ busqueda }}" class="px-2 py-2 rounded border border-gray-300 mt-2">
+        <h0>Ordenar por</h0>
+        <select name="ordenar_por" class="px-2 py-2 rounded border border-gray-300 w-28">
+          <option  value="name" {% if ordenar_por == 'name' %}selected{% endif %}>Nombre</option>
+          <option value="lastname" {% if ordenar_por == 'lastname' %}selected{% endif %}>Apellido</option>
+        </select>
+        {{ Button.success("Buscar 🔎","submit") }}
+        <input type="hidden" name="orden" value="{{ orden }}">
+        <button type="submit" name="toggle_order" value="{% if order == 'asc' %}desc{% else %}asc{% endif %}" class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+        focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+          {% if orden == 'asc' %}
+              Cambiar a orden descendente
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z"/></svg>
+          {% else %}
+              Cambiar a orden ascendente
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z"/></svg>
+          {% endif %}
+        </button>
+        {{ LinkButton.warning("Borrar filtros", "/jya-list") }}
+      </div>
+
+    </form>
+  </div>
+
+  <div class="mt-4 mx-auto md:max-h-[48rem]">
+    {% call Table.Table(class="") %}
+    {% if g.user_has_permissions(["jinete-y-amazona_show", "jinete-y-amazona_index"]) %}
+      {{ Table.TableHead(["Nombre", "Apellido", "DNI", "Fecha de nacimiento", "Lugar de nacimiento", "Profesionales", "Acciones"], class="bg-blue-200", col_class="px-6 py-3") }}
+      {% else %}
+      {{ Table.TableHead(["Nombre", "Apellido", "DNI", "Fecha de nacimiento", "Lugar de nacimiento", "Profesionales"], class="bg-blue-200", col_class="px-6 py-3") }}
+      {% endif %}
+      <tbody>
+        {% if jya|length == 0 %}
+        <tr>
+          <td class="text-center font-medium" colspan="6">No se encontraron jinetes/amazonas</td>
+        </tr>
+        {% endif %}
+        {% for jinete in jya %}
+        <tr class="border-b border-gray-200 py-2">
+          <td class="text-lg px-6 py-4">{{ jinete.name }}</td>
+          <td class="text-lg px-6 py-4">{{ jinete.lastname }}</td>
+          <td class="text-lg px-6 py-4">{{ jinete.document_number }}</td>
+          <td class="text-lg px-6 py-4">{{ jinete.birthdate.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td class="text-lg px-6 py-4">{{ jinete.place_of_birth }}</td>
+          <td class="text-lg px-6 py-4">{{ jinete.professionals }}</td>
+          {% if g.user_has_permissions(["jinete-y-amazona_show", "jinete-y-amazona_index"]) %}
+          <td class="px-6 py-4">
+            <div class="flex gap-2">
+              {{ LinkButton.info("Documentos", "/jya_show_files/" ~ jinete.id) }}
+              {% if g.user_has_permissions(["jinete-y-amazona_update"]) %}
+              {{ LinkButton.info("Editar", "/jya-edit/" ~ jinete.id ) }}
+              {% endif %}
+              {% if g.user_has_permissions(["jinete-y-amazona_destroy"]) %}
+              <form action="{{ url_for('jya.delete_jya', id=jinete.id) }}" method="POST" class="inline">
+                {{ Form.new_csrf_token() }}  <!-- Esto agrega el campo CSRF -->
+                {{ Button.danger("Borrar", "submit", class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600", **{"data-button-delete-jya": "", "data-name": jinete.name}) }}
+              </form>
+              {% endif %}
+            </div>          
+          </td>
+          {% endif %}
+        {% endfor %}
+        </tr>
+        
+      </tbody>
+    {% endcall %}
+    
+
+  </div>
+  {% if total > per_page %}
+  <div class="mt-4 flex-none">
+    {% set query_args = (["criterio=" ~ criterio] if criterio else []) + (["busqueda=" ~ busqueda] if busqueda else []) + (["ordenar_por=" ~ ordenar_por] if ordenar_por else []) + (["orden=" ~ orden] if orden else []) %}
+    {{ Pagination(page, per_page, total, query_args) }}
+  </div>
+  {% endif %}
+  
+  <div class="mt-4 flex justify-center">
+    <p>Mostrando {{ jya|length }} de {{ total }} jinetes/amazonas</p>
+  </div>
+</main>
+
+<script>
+  /** @type {NodeListOf<HTMLButtonElement>} */
+  const deleteJyAButtons = document.querySelectorAll('[data-button-delete-jya]');
+
+  deleteJyAButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const jyaName = event.target.getAttribute('data-name');
+      if (!confirm(`¿Estás seguro de que quieres eliminar al Jinete/Amazonas ${jyaName}?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

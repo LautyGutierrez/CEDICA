@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es-AR" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="../../../../static/assets/logo.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet">
+  {% block base_head %}
+  <title> CEDICA </title>
+  {% endblock %}
+  {% if config.DEBUG %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='tailwind_prod.css') }}">
+  
+  {% else %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='.dev/tailwind_development.css') }}">
+  {% endif %}
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+  <style>
+    .blur-in {
+      animation: blur-in 0.4s linear both
+    }
+
+    @keyframes blur-in {
+      0% {
+        filter: blur(12px);
+        opacity: 0
+      }
+
+      100% {
+        filter: blur(0);
+        opacity: 1
+      }
+    }
+
+
+    .text {
+
+      color: #eeeeee;
+      text-transform: capitalize;
+      background: linear-gradient(197deg, rgba(250, 196, 8, 1) 0%, rgba(230, 199, 46, 1) 35%, rgba(107, 180, 212, 1) 81%, rgba(107, 180, 212, 1) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-stroke: 15px transparent;
+    }
+  </style>
+</head>
+
+<body class="flex flex-col w-full h-full mx-auto xl:border-l xl:border-r font-[Poppins] text-zinc-800 overflow-auto">
+  {% include "_frags/flash_message.html" %}
+  <header class="bg-white flex flex-col mt-3">
+    <nav class=" flex justify-between items-center w-[100%] ml-auto mr-[1.5rem] h-auto shadow-none px-16 md:shadow-lg">
+      <a href="/">
+        <img class="w-[60px]  cursor-pointer" src="../../../../static/assets/logoCEDICA.png" alt="logoCEDICA">
+      </a>
+      <div
+        class=" nav-links absolute duration-500 md:static bg-white md:min-h-fit min-h-[60vh] left-0 top-[-100%] md:w-auto w-full flex items-center px-5 z-50 md:hidden">
+
+        <ul class="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-8 m-4">
+          {% if g.user and g.user_has_permissions(["usuarios_show", "usuarios_index"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/admin/users">Usuario</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["jinete-y-amazona_index", "jinete-y-amazona_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/jya-list"> Jinetes y Amazonas</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["ecuestre_index", "ecuestre_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/ecuestre/showEcuestre"> Ecuestre </a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["equipo_index", "equipo_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/member"> Equipo</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["cobros_index", "cobros_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/cobros"> Cobros</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["pagos_index", "pagos_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/pagos"> Pagos</a>
+          </li>
+          {% endif %}
+          {% if g.user %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/profile">Ver perfil</a>
+          </li>
+          {% endif %}
+          {% if g.user %}
+          <li>
+            <a href="/logout" class="hover:text-[#6cb5d5] transition-colors duration-200" role="menuitem" tabindex="-1"
+              id="menu-item-1">Cerrar sesión</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+      <div
+        class="hidden mx-auto duration-500 md:flex bg-white items-center px-5 z-50 md:min-h-fit min-h-[60vh] left-0 top-[-100%] md:w-auto  ">
+
+        <ul class="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-8">
+          {% if g.user and g.user_has_permissions(["usuarios_show", "usuarios_index"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/admin/users">Usuario</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["jinete-y-amazona_index", "jinete-y-amazona_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/jya-list"> Jinetes y Amazonas</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["ecuestre_index", "ecuestre_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/ecuestre/showEcuestre"> Ecuestre </a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["equipo_index", "equipo_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/member"> Equipo</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["cobros_index", "cobros_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/cobros"> Cobros</a>
+          </li>
+          {% endif %}
+          {% if g.user and g.user_has_permissions(["pagos_index", "pagos_show"]) %}
+          <li>
+            <a class="hover:text-[#6cb5d5] transition-colors duration-200" href="/pagos"> Pagos</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="flex items-center gap-4 ml-0">
+        {% if not g.user %}
+        <a href="/login">
+          <button
+            class="bg-white text-[#6cb5d5] px-5 py-2 rounded-full hover:bg-[#8ad6f6] hover:text-white transition-colors duration-300">
+            Iniciar sesión
+          </button>
+        </a>
+        {% endif %}
+        {% if not g.user %}
+        <a href="/register">
+          <button
+            class="bg-[#6cb5d5] text-white px-5 py-2 rounded-full hover:bg-[#3296c1] hover:text-white transition-colors duration-300">
+            Registrarse
+          </button>
+        </a>
+        {% endif %}
+        {% if g.user %}
+        <ion-icon onclick="onToggleMenu(this)" name="menu" class="text-3xl cursor-pointer md:hidden"></ion-icon>
+        {% endif %}
+      </div>
+      {% if g.user %}
+      <div id="block" class="inline-block text-left ">
+        <div class="">
+          <button type="button"
+            class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 "
+            id="menu-button" aria-expanded="false" aria-haspopup="true" onclick="toggleMenu()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60px" height="60px" viewBox="0 0 24 24">
+              <g fill="gray" fill-opacity="0" stroke="black" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2">
+                <path stroke-dasharray="20" stroke-dashoffset="20"
+                  d="M12 5c1.66 0 3 1.34 3 3c0 1.66 -1.34 3 -3 3c-1.66 0 -3 -1.34 -3 -3c0 -1.66 1.34 -3 3 -3Z">
+                  <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.4s" values="20;0" />
+                </path>
+                <path stroke-dasharray="36" stroke-dashoffset="36" d="M12 14c4 0 7 2 7 3v2h-14v-2c0 -1 3 -3 7 -3Z">
+                  <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.5s" dur="0.5s" values="36;0" />
+                </path>
+                <animate fill="freeze" attributeName="fill-opacity" begin="1.1s" dur="0.15s" values="0;0.3" />
+              </g>
+            </svg>
+          </button>
+        </div>
+
+        <div id="dropdownMenu"
+          class="hidden absolute right-4 z-10 mt-0 w-36 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+          <div class="py-1" role="none">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1"
+              id="menu-item-0">Ver perfil</a>
+            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1"
+              id="menu-item-1">Cerrar sesión</a>
+          </div>
+        </div>
+      </div>
+
+      {% endif %}
+  </header>
+
+  {%block content %}
+
+  {%endblock %}
+  {% block base_body %}
+
+  {% endblock %}
+</body>
+
+<script>
+  const navLinks = document.querySelector('.nav-links')
+  const onToggleMenu = e => {
+    e.name = e.name === 'menu' ? 'close' : 'menu'
+    navLinks.classList.toggle('top-[9%]')
+  }
+
+
+  function toggleMenu() {
+    const menu = document.getElementById('dropdownMenu');
+
+    const button = document.getElementById('menu-button');
+    menu.classList.toggle('hidden');
+    button.setAttribute('aria-expanded', !menu.classList.contains('hidden'));
+  }
+
+  window.addEventListener('click', function (e) {
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const menuButton = document.getElementById('menu-button');
+    if (!dropdownMenu.classList.contains('hidden') && !dropdownMenu.contains(e.target) && !menuButton.contains(e.target)) {
+      dropdownMenu.classList.add('hidden');
+      menuButton.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  window.addEventListener('resize', function () {
+    const block = document.getElementById('block');
+    if (window.innerWidth < 768) {
+      block.classList.add('hidden');
+    } else {
+      block.classList.remove('hidden');
+    }
+  });
+
+  function checkWindowSize() {
+    const block = document.getElementById('block');
+    if (window.innerWidth < 768) {
+      block.classList.add('hidden');
+    } else {
+      block.classList.remove('hidden');
+    }
+  }
+
+  // Ejecutar cuando la página se carga
+  window.addEventListener('DOMContentLoaded', checkWindowSize);
+
+  // Ejecutar cuando la ventana se redimensiona
+  window.addEventListener('resize', checkWindowSize);
+
+
+</script>
+
+
+</html>

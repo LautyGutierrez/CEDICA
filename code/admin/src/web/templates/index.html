@@ -1,0 +1,220 @@
+{% extends "_layouts/base.html" %}
+{% import "_macros/cards.html" as Card %}
+
+{% block head %}
+<title>CEDICA</title>
+{% endblock %}
+
+
+{% block content %}
+<main class="flex flex-col h-full w-full relative mt-10 overflow-x-hidden">
+
+
+  {% if not session["complete_register"] %}
+  <div class="flex items-center justify-center w-full h-full">
+    <section class="">
+      <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+        <div class="mx-auto max-w-screen-sm text-center">
+          <h1 class="mb-4 text-7xl tracking-tight font-extrabold md:text-5xl lg:text-8xl text-[#3d77d9]">
+            COMPLETAR REGISTRO
+          </h1>
+          <p class="mb-4 text-3xl tracking-tight font-bold text-zinc-900 md:text-4xl">
+            Parece que aún no completaste tu registro falta que elijas una contraseña 🫣
+          </p>
+          <p class="mb-4 text-base md:text-lg font-light text-zinc-500">
+            Por favor, completa tu registro aqui: <a class="text-[#3d77d9] hover:text-[#7ba3e8] underline" href="{{ url_for('root.complete_register', user_id=session['user_id']) }}">Completar datos</a>
+          </p>
+
+        </div>
+      </div>
+    </section>
+  </div>
+  {% else %}
+
+
+
+    {% if g.user and g.user_permissions != () %}
+    <div class="relative w-full">
+
+      <div class="flex duration-500 ease-in-out z-[5] w-full max-w-[97%] mx-auto relative" id="carousel">
+        <div class="min-w-full flex items-center justify-center h-[42rem]">
+          <img class="w-[97%] h-full object-cover object-center rounded-xl  blur-[2px]"
+            src="../../../static/assets/Cedica-1.jpg" alt="Cedica-1">
+        </div>
+        <div class="min-w-full flex items-center justify-center h-[42rem]">
+          <img class="w-[97%] h-full object-cover object-center rounded-xl  blur-[2px]"
+            src="../../../static/assets/Cedica-2.jpg" alt="Cedica-2">
+        </div>
+        <div class="min-w-full flex items-center justify-center h-[42rem]">
+          <img class="w-[97%] h-full object-cover object-center rounded-xl blur-[2px]"
+            src="../../../static/assets/Cedica-3.jpeg" alt="Cedica-3">
+        </div>
+        <div class="min-w-full flex items-center justify-center h-[42rem]">
+          <img class="w-[97%] h-full object-cover object-center rounded-xl blur-[2px]"
+            src="../../../static/assets/Cedica-4.jpg" alt="Cedica-4">
+        </div>
+        <div class="min-w-full flex items-center justify-center h-[42rem]">
+          <img class="w-[97%] h-full object-cover object-center rounded-xl  blur-[2px]"
+            src="../../../static/assets/Cedica-5.jpg" alt="Cedica-5">
+        </div>
+
+
+      </div>
+      <div class="absolute inset-0  flex items-center justify-center z-[5] mb-36 md:mb-1">
+        <h1
+          class="blur-in text text-transparent bg bg-clip-text bg-gradient-to-r text-2xl xs:text-5xl sm:text-7xl lg:text-8xl font-extrabold text-center max-w-[80vw] text-pretty">
+          Panel Administrativo <br /> CEDICA
+        </h1>
+      </div>
+    </div>
+
+
+
+    <button id="prev"
+      class="absolute rounded-full left-0 top-[38%] md:top-[44%] transform  translate-x-0 md:translate-x-6 bg-[#98b9f1]/70 text-white px-3 py-2 z-10  text-3xl hover:bg-[#7ba3e8] ">
+      &lt;
+    </button>
+
+
+    <button id="next"
+      class="absolute rounded-full right-0 top-[38%] md:top-[44%] transform -translate-x-0 md:-translate-x-6 bg-[#98b9f1]/70 text-white px-3 py-2 z-10  text-3xl hover:bg-[#7ba3e8]">
+      &gt;
+    </button>
+
+    <div class="flex justify-center">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-7 m-10 ">
+        {% if g.user and g.user_has_permissions(["usuarios_show", "usuarios_index"]) %}
+        {{Card.link("Usuarios", "0 0 448 512", '
+        <path
+          d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z"', "/admin/users", "usuarios") }}
+        {% endif %}
+
+        {% if g.user and g.user_has_permissions(["jinete-y-amazona_index", "jinete-y-amazona_show"]) %}
+        {{Card.link("Jinetes y Amazonas", "0 0 640 512", ' <path
+          d="M320 64c14.4 0 22.3-7 30.8-14.4C360.4 41.1 370.7 32 392 32c49.3 0 84.4 152.2 97.9 221.9C447.8 272.1 390.9 288 320 288s-127.8-15.9-169.9-34.1C163.6 184.2 198.7 32 248 32c21.3 0 31.6 9.1 41.2 17.6C297.7 57 305.6 64 320 64zM111.1 270.7c47.2 24.5 117.5 49.3 209 49.3s161.8-24.8 208.9-49.3c24.8-12.9 49.8-28.3 70.1-47.7c7.9-7.9 20.2-9.2 29.6-3.3c9.5 5.9 13.5 17.9 9.9 28.5c-13.5 37.7-38.4 72.3-66.1 100.6C523.7 398.9 443.6 448 320 448s-203.6-49.1-252.5-99.2C39.8 320.4 14.9 285.8 1.4 248.1c-3.6-10.6 .4-22.6 9.9-28.5c9.5-5.9 21.7-4.5 29.6 3.3c20.4 19.4 45.3 34.8 70.1 47.7z" />
+        ', "/jya-list", "jinetes y amazonas") }}
+        {% endif %}
+
+        {% if g.user and g.user_has_permissions(["ecuestre_index", "ecuestre_show"]) %}
+        {{Card.link("Ecuestre" , "0 0 576 512", '
+        <path
+          d="M448 238.1l0-78.1 16 0 9.8 19.6c12.5 25.1 42.2 36.4 68.3 26c20.5-8.2 33.9-28 33.9-50.1L576 80c0-19.1-8.4-36.3-21.7-48l5.7 0c8.8 0 16-7.2 16-16s-7.2-16-16-16L480 0 448 0C377.3 0 320 57.3 320 128l-96 0-20.8 0-54.4 0c-30.7 0-57.6 16.3-72.5 40.8C33.2 174.5 0 211.4 0 256l0 56c0 13.3 10.7 24 24 24s24-10.7 24-24l0-56c0-13.4 6.6-25.2 16.7-32.5c1.6 13 6.3 25.4 13.6 36.4l28.2 42.4c8.3 12.4 6.4 28.7-1.2 41.6c-16.5 28-20.6 62.2-10 93.9l17.5 52.4c4.4 13.1 16.6 21.9 30.4 21.9l33.7 0c21.8 0 37.3-21.4 30.4-42.1l-20.8-62.5c-2.1-6.4-.5-13.4 4.3-18.2l12.7-12.7c13.2-13.2 20.6-31.1 20.6-49.7c0-2.3-.1-4.6-.3-6.9l84 24c4.1 1.2 8.2 2.1 12.3 2.8L320 480c0 17.7 14.3 32 32 32l32 0c17.7 0 32-14.3 32-32l0-164.3c19.2-19.2 31.5-45.7 32-75.7c0 0 0 0 0 0l0-1.9zM496 64a16 16 0 1 1 0 32 16 16 0 1 1 0-32z" />
+        ', "/ecuestre/showEcuestre", "ecuestres") }}
+        {% endif %}
+
+        {% if g.user and g.user_has_permissions(["equipo_index", "equipo_show"]) %}
+        {{Card.link("Equipo", "0 0 640 512",'
+        <path
+          d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z" />
+        ', "/member", "miembros") }}
+        {% endif %}
+
+        {% if g.user and g.user_has_permissions(["cobros_index", "cobros_show"]) %}
+        {{Card.link("Cobros", "0 0 576 512", '
+        <path
+          d="M64 64C28.7 64 0 92.7 0 128L0 384c0 35.3 28.7 64 64 64l448 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64L64 64zm64 320l-64 0 0-64c35.3 0 64 28.7 64 64zM64 192l0-64 64 0c0 35.3-28.7 64-64 64zM448 384c0-35.3 28.7-64 64-64l0 64-64 0zm64-192c-35.3 0-64-28.7-64-64l64 0 0 64zM288 160a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
+        ', "/cobros/", "cobros") }}
+        {% endif %}
+
+        {% if g.user and g.user_has_permissions(["pagos_index", "pagos_show"]) %}
+        {{Card.link("Pagos", "0 0 576 512", '
+        <path
+          d="M64 32C28.7 32 0 60.7 0 96l0 32 576 0 0-32c0-35.3-28.7-64-64-64L64 32zM576 224L0 224 0 416c0 35.3 28.7 64 64 64l448 0c35.3 0 64-28.7 64-64l0-192zM112 352l64 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-64 0c-8.8 0-16-7.2-16-16s7.2-16 16-16zm112 16c0-8.8 7.2-16 16-16l128 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-128 0c-8.8 0-16-7.2-16-16z" />
+        ', "/pagos/", "pagos") }}
+        {% endif %}
+
+        {% if g.user and g.user_has_permissions(["contenido_index", "contenido_show"]) %}
+        {{Card.link("Contenido", "0 0 512 512",'
+        <path
+          d="M96 96c0-35.3 28.7-64 64-64l288 0c35.3 0 64 28.7 64 64l0 320c0 35.3-28.7 64-64 64L80 480c-44.2 0-80-35.8-80-80L0 128c0-17.7 14.3-32 32-32s32 14.3 32 32l0 272c0 8.8 7.2 16 16 16s16-7.2 16-16L96 96zm64 24l0 80c0 13.3 10.7 24 24 24l112 0c13.3 0 24-10.7 24-24l0-80c0-13.3-10.7-24-24-24L184 96c-13.3 0-24 10.7-24 24zm208-8c0 8.8 7.2 16 16 16l48 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-48 0c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16l48 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-48 0c-8.8 0-16 7.2-16 16zM160 304c0 8.8 7.2 16 16 16l256 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-256 0c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16l256 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-256 0c-8.8 0-16 7.2-16 16z" />
+        ', "/content/", "contenido") }}
+        {% endif %}
+        
+        {{Card.link("Reportes","0 0 448 512",'
+        <path
+          d="M160 80c0-26.5 21.5-48 48-48l32 0c26.5 0 48 21.5 48 48l0 352c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-352zM0 272c0-26.5 21.5-48 48-48l32 0c26.5 0 48 21.5 48 48l0 160c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48L0 272zM368 96l32 0c26.5 0 48 21.5 48 48l0 288c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-288c0-26.5 21.5-48 48-48z" />
+        ', '/reportes-graficos', 'los reportes y gráficos') }}
+        {% if g.user and g.user_has_permissions(["contacto_index", "contacto_show"])%}
+        {{Card.link("Contacto", "0 0 512 512", '
+        <path
+          d="M121 32C91.6 32 66 52 58.9 80.5L1.9 308.4C.6 313.5 0 318.7 0 323.9L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-92.1c0-5.2-.6-10.4-1.9-15.5l-57-227.9C446 52 420.4 32 391 32L121 32zm0 64l270 0 48 192-51.2 0c-12.1 0-23.2 6.8-28.6 17.7l-14.3 28.6c-5.4 10.8-16.5 17.7-28.6 17.7l-120.4 0c-12.1 0-23.2-6.8-28.6-17.7l-14.3-28.6c-5.4-10.8-16.5-17.7-28.6-17.7L73 288 121 96z" />
+        ', "/contacto/index", "el contacto") }}
+        {% endif %}
+        {% if g.user and g.user_has_permissions(["usuarios_accept"])%}
+        {{Card.link("Pre Registros", "0 0 512 512", '
+        <path
+          d="M121 32C91.6 32 66 52 58.9 80.5L1.9 308.4C.6 313.5 0 318.7 0 323.9L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-92.1c0-5.2-.6-10.4-1.9-15.5l-57-227.9C446 52 420.4 32 391 32L121 32zm0 64l270 0 48 192-51.2 0c-12.1 0-23.2 6.8-28.6 17.7l-14.3 28.6c-5.4 10.8-16.5 17.7-28.6 17.7l-120.4 0c-12.1 0-23.2-6.8-28.6-17.7l-14.3-28.6c-5.4-10.8-16.5-17.7-28.6-17.7L73 288 121 96z" />
+        ', "/admin/users/preRegisters", "usuarios pre-registrados con Google") }}
+        {% endif %}
+      </div>
+    </div>
+
+    {% else %}
+    <div class="flex items-center justify-center w-full h-full">
+      <section class="">
+        <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+          <div class="mx-auto max-w-screen-sm text-center">
+            <h1 class="mb-4 text-7xl tracking-tight font-extrabold md:text-8xl lg:text-9xl text-[#3d77d9]">
+              SIN ROL
+            </h1>
+            <p class="mb-4 text-3xl tracking-tight font-bold text-zinc-900 md:text-4xl">
+              Parece que aún no tenés un rol asignado 😭
+            </p>
+            <p class="mb-4 text-base md:text-lg font-light text-zinc-500">
+              Por favor, contactá al administrador para que te asigne un rol y puedas acceder a la plataforma.
+            </p>
+
+          </div>
+        </div>
+      </section>
+    </div>
+    {% endif %}
+  {% endif %}
+</main>
+
+<script>
+  const carousel = document.getElementById('carousel');
+  const prevButton = document.getElementById('prev');
+  const nextButton = document.getElementById('next');
+  const slides = Array.from(carousel.children);
+  const totalSlides = slides.length;
+
+  const firstClone = slides[0].cloneNode(true);
+  const lastClone = slides[totalSlides - 1].cloneNode(true);
+
+  carousel.appendChild(firstClone);
+  carousel.insertBefore(lastClone, slides[0]);
+
+  let currentIndex = 1;
+  carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+  prevButton.addEventListener('click', () => {
+    currentIndex--;
+    updateCarouselPosition(true);
+    if (currentIndex === 0) {
+      setTimeout(() => {
+        currentIndex = totalSlides;
+        updateCarouselPosition(false);
+      }, 500);
+    }
+  });
+
+  nextButton.addEventListener('click', () => {
+    currentIndex++;
+    updateCarouselPosition(true);
+    if (currentIndex === totalSlides + 1) {
+      setTimeout(() => {
+        currentIndex = 1;
+        updateCarouselPosition(false);
+      }, 500);
+    }
+  });
+
+  const updateCarouselPosition = (animate) => {
+    const offset = -currentIndex * 100;
+    carousel.style.transition = animate ? 'transform 0.5s ease-in-out' : 'none';
+    carousel.style.transform = `translateX(${offset}%)`;
+  };
+</script>
+
+{% endblock %}

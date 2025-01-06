@@ -1,0 +1,44 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/table.html" as Table %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Reporte de Propuestas de Trabajo Institucionales</title>
+{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col items-center justify-center mt-10">
+        <h1 class="text-3xl font-bold text-center mb-4">Ranking de Propuestas de Trabajo Más Solicitadas</h1>
+        <div class="flex justify-center">
+            <p class="mt-2 mb-2 mr-4 text-lg text-center">
+                Acá vas a encontrar un listado del ranking de las propuestas de trabajo institucionales mas solicitadas.
+            </p>
+        </div>
+        
+        <div class="flex flex-row gap-4 justify-center m-2">
+            {{ LinkButton.primary("Volver", "/reportes-graficos", class="mb-4") }}
+        </div>
+        {% call Table.Table(class="") %}
+            {{ Table.TableHead(["Ranking", "Propuesta de trabajo", "cantidad", "Acciones"], class="bg-blue-200", col_class="px-6 py-3") }}
+            <tbody>
+                {% if propuestas|length == 0 %}
+                <tr>
+                <td class="text-center font-medium" colspan="6">No se encontraron reportes</td>
+                </tr>
+                {% endif %}
+                {% for propuesta in propuestas %}
+                    <tr class="border-b border-gray-200 py-2 text-center">
+                        <td class="text-lg px-6 py-4">{{ loop.index }}</td>
+                        <td class="text-lg px-6 py-4">{{ propuesta[0] }}</td>
+                        <td class="text-lg px-6 py-4">{{ propuesta[1] }}</td>
+                        <td class="px-6 py-4">
+                            <div class="px-6 py-4">
+                                {{ LinkButton.info("Ver", "/propuesta-trabajo-jya/" ~ propuesta[0] | urlencode) }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% endcall %}
+    </div>
+{% endblock %}

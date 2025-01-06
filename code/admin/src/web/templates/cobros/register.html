@@ -1,0 +1,31 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Nuevo pago</title>
+<script src="{{ url_for('static', filename='js/user_setting.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col">
+    <div class="flex flex-col items-center justify-center mt-10">
+        <h1 class="text-3xl font-bold text-center mb-2">Registro de Cobro</h1>
+        <p class="text-center text-gray-500 mb-5">
+            Por favor, complete el formulario para registrar un nuevo cobro.
+        </p>
+        <div class="flex flex-col items-center md:basis-1/2 w-[400px] shadow-2xl rounded-3xl">
+
+            <form method="post" class="flex flex-col gap-2 p-4 md:gap-4 mb-4 md:mt-4">
+                {% call Form.render_form(form, action=form_action) %}
+                <div class="flex flex-col xs:flex-row gap-4 justify-around">
+                    {{ LinkButton.danger("Volver", "/cobros") }}
+                    {{ Button.success("Registrar", type='submit') }}
+                </div>
+                {% endcall %}
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

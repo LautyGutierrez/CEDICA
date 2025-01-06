@@ -1,0 +1,20 @@
+{% extends "_layouts/auth.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+
+{% block head %}
+<title>Registro</title>
+{% endblock %}
+{% block content %}
+<div class="flex flex-col items-center justify-center mt-5">
+  <h1 class="text-3xl font-bold text-center mb-2">Completar Registro</h1>
+  <p class="text-center text-gray-500 mb-5">Por favor, complete el siguiente formulario para guardar una contraseña segura para su cuenta</p>
+  <div class="flex flex-col items-center md:basis-1/2 w-[400px] shadow-2xl rounded-3xl">
+    {% call Form.render_form(form, action=form_action) %}
+    {{Button.success("Confirmar","submit")}}
+    {% endcall %}
+    <div class="h-8"></div>
+  </div>
+</div>
+
+{% endblock %}

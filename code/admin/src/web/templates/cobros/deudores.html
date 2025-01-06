@@ -1,0 +1,108 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title>Lista de Jinetes/Amazonas</title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Jinetes/Amazonas Deudores</h1>
+    </div>
+    <div class="flex justify-center">
+      <p class="mt-1 mb-4 mr-4 font-bold font-mono">
+        En esta sección se muestran los jinetes/amazonas que son deudores o no y su cantidad respectiva de cobros asignados.
+      </p>
+    </div>
+    <div class="flex justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4"> 
+        {{ LinkButton.primary("Volver a inicio", "/cobros", class="") }}
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-center"></div>
+
+    <div class="mt-4 mx-auto md:max-h-[48rem]">
+      {% call Table.Table(class="") %}
+      {% if g.user_has_permissions(["jinete-y-amazona_show", "jinete-y-amazona_index"]) %}
+        {{ Table.TableHead(["Nombre", "Apellido", "DNI", "Fecha de nacimiento", "Cant. Cobros asignados", "Acciones"], class="bg-blue-200", col_class="px-6 py-3") }}
+      {% else %}
+        {{ Table.TableHead(["Nombre", "Apellido", "DNI", "Fecha de nacimiento", "Cant. Cobros asignados"], class="bg-blue-200", col_class="px-6 py-3") }}
+      {% endif %}
+      <tbody>
+        {% if jya|length == 0 %}
+        <tr>
+          <td class="text-center font-medium" colspan="6">No se encontraron jinetes/amazonas</td>
+        </tr>
+        {% endif %}
+        {% for jinete in jya %}
+        {% if jinete.is_debtor %}
+        <tr class="border-b border-gray-200 py-0 text-yellow-700 p-2 rounded-md shadow-md">
+        {% else %}
+        <tr class="border-b border-gray-200 py-0 ">
+        {% endif %}
+          <td class="text-lg">{{ jinete.name }}</td>
+          <td class="text-lg">{{ jinete.lastname }}</td>
+          <td class="text-lg">{{ jinete.document_number }}</td>
+          <td class="text-lg"><p class="flex justify-center">{{ jinete.birthdate.strftime('%d/%m/%Y %H:%M') }}</p></td>
+          <td class="text-[15px] font-medium flex justify-center mt-2">
+            <p class="flex justify-center bg-amber-100 ring-2 ring-amber-300 rounded-md shadow-lg w-16 h-5">{{ jinete[-1] }}</p>
+          </td>
+          {% if g.user_has_permissions(["jinete-y-amazona_show", "jinete-y-amazona_index"]) %}
+          <td class="">
+            <div class="flex gap-2">
+              <form method="POST" action="/toggel_debtor/{{ jinete.id }}" style="display: inline;" class="toggle-debtor-form">
+                {{ Form.new_csrf_token() }}
+                {% if jinete.is_debtor %}
+                {{ Button.success("Marcar como no deudor", type="submit") }}
+                {% else %}
+                {{ Button.warning("Marcar deudor", type="submit") }}
+                {% endif %}
+              </form>
+            </div>          
+          </td>
+          {% endif %}
+        {% endfor %}
+        </tr>
+      </tbody>
+      {% endcall %}
+    </div>
+    
+    {% if total > per_page %}
+    <div class="mt-4 flex-none">
+      {% set query_args = (["criterio=" ~ criterio] if criterio else []) + (["busqueda=" ~ busqueda] if busqueda else []) + (["ordenar_por=" ~ ordenar_por] if ordenar_por else []) + (["orden=" ~ orden] if orden else []) %}
+      {{ Pagination(page, per_page, total, query_args) }}
+    </div>
+    {% endif %}
+    {% if total != 0 %}
+    <div class="mt-4 flex justify-center">
+      <p>Mostrando {{ jya|length }} de {{ total }} jinetes/amazonas</p>
+    </div>
+    {% endif %}
+  </div>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {  
+    const toggleDebtorForms = document.querySelectorAll('.toggle-debtor-form');
+    
+    toggleDebtorForms.forEach((form) => {
+      form.addEventListener('submit', (event) => { 
+        const jineteName = form.closest('tr').querySelector('td:nth-child(1)').textContent;
+        const actionButton = form.querySelector('button');
+        const action = actionButton.textContent.includes("no deudor") ? "marcar como no deudor" : "marcar deudor";
+
+        if (!confirm(`¿Estás seguro de que deseas ${action} al Jinete/Amazona ${jineteName}?`)) {
+          event.preventDefault(); 
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock %}

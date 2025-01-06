@@ -1,0 +1,26 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Reporte Histórico de Cobros</title>
+{% endblock %}
+
+{% block content %}
+    <section class="flex flex-col items-center justify-center mt-10">
+        <h1 class="text-2xl font-bold mb-4 text-center">Reporte de cobros</h1>
+        <p class="mt-2 mb-2 mr-4 font-bold font-mono">
+            Reportes de cobros de los miembros de CEDICA.
+        </p>       
+         <form action="{{ url_for('reportes.reporte_historico_cobros_post') }}" class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4">
+            {{ form.hidden_tag() }}  <!-- Esto agrega el campo CSRF -->
+            {% call Form.render_form(form, action=form_action) %}
+            <div class="flex flex-col w-full gap-4 justify-around">
+                {{ Button.success("Buscar reporte","submit")}}
+                {{ LinkButton.info("Volver", "/reportes-graficos") }}
+            </div>
+            {% endcall %}
+        </form>
+    </section>
+{% endblock %}

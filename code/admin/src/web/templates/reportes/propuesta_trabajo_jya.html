@@ -1,0 +1,102 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/table.html" as Table %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title>Jinetes y Amazonas con propuesta de trabajo institucional {{ propuesta }}</title>
+{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col items-center justify-center mt-10">
+        <h1 class="text-3xl font-bold text-center mb-4">Jinetes y Amazonas con propuesta de trabajo institucional {{ propuesta }}</h1>
+        <section class="flex flex-col justify-center mb-6">
+            <div class="flex justify-center">
+                <p class="mt-2 mb-2 mr-4 text-lg text-center">
+                    Acá vas a encontrar un listado de los jinetes y/o amazonas con propuesta de trabajo institucional {{ propuesta }}.
+                </p>
+            </div>
+        
+            <div class="flex flex-row gap-4 justify-center m-2">
+                {{ LinkButton.primary("Volver", "/reporte-propuestas-trabajo", class="mb-4") }}
+            </div>
+            
+            <form action="{{ url_for('reportes.propuesta_trabajo_jya', propuesta=propuesta )}}" method="GET" class="flex flex-wrap gap-4">
+                {{ Form.new_csrf_token() }}
+                <label for="filter_field" class="self-center"> Filtrar por: </label>
+                <select id="filterSelect" class="rounded-lg" name="filter_field">
+                    <option value="name" {% if filter_field=="name" %}selected{% endif %}>Nombre</option>
+                    <option value="lastname" {% if filter_field=="lastname" %}selected{% endif %}>Apellido</option>
+                    <option value="document_number" {% if filter_field=="document_number" %}selected{% endif %}>DNI</option>
+                </select>
+                <input id="filterInput" class="rounded-lg" type="text" value="{{ filter_input }}" name="filter_input">
+    
+                <select class="rounded-lg" name="order_by">
+                    <option value="name" {% if order_by=="name" %}selected{% endif %}>Ordenar por nombre</option>
+                    <option value="lastname" {% if order_by=="lastname" %}selected{% endif %}>Ordenar por apellido</option>
+                    <option value="document_number" {% if order_by=="document_number" %}selected{% endif %}>Ordenar por DNI</option>
+                    <option value="disability_type" {% if order_by=="disability_type" %}selected{% endif %}>Ordenar por tipo de discapacidad</option>
+                </select>
+                <input type="hidden" name="order" value="{{ order or 'asc' }}">
+    
+    
+                {{ Button.success("Buscar 🔎","submit") }}
+    
+                <button type="submit" name="toggle_order" value="{% if order == 'asc' %}desc{% else %}asc{% endif %}" class="font-medium rounded-lg text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+                      focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+                    {% if order == 'asc' %}
+                    Cambiar a orden descendente
+                    <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                        viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z" />
+                    </svg>
+                    {% else %}
+                    Cambiar a orden ascendente
+                    <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                        viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z" />
+                    </svg>
+                    {% endif %}
+                </button>
+    
+            </form>
+        
+        </section>
+        {% call Table.Table(class="") %}
+            {{ Table.TableHead(["Nombre", "Apellido", "DNI", "Edad", "Teléfono", "Tipo de discapacidad", "¿Tiene beca?"], class="bg-blue-200", col_class="px-6 py-3") }}
+            <tbody>
+                {% if jya|length == 0 %}
+                <tr>
+                <td class="text-center font-medium" colspan="7">No se encontraron reportes</td>
+                </tr>
+                {% endif %}
+                {% for j in jya %}
+                    <tr class="border-b border-gray-200 py-2 text-center">
+                        <td class="text-lg px-6 py-4">{{ j.name }}</td>
+                        <td class="text-lg px-6 py-4">{{ j.lastname }}</td>
+                        <td class="text-lg px-6 py-4">{{ j.document_number }}</td>
+                        <td class="text-lg px-6 py-4">{{ j.age }}</td>
+                        <td class="text-lg px-6 py-4">{{ j.phone_number }}</td>
+                        <td class="text-lg px-6 py-4">{{ j.disability_type }}</td>
+                        <td class="text-lg px-6 py-4">{{ "Sí" if j.is_scholarship_holder else "No" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% endcall %}
+        {% if total %}
+        <div class="mt-4 flex-none">
+            {% set query_args = (["filter_field=" ~ filter_field] if filter_field else []) + (["job=" ~ job] if job else
+            []) + (["order_by=" ~ order_by] if order_by else []) + (["order=" ~ order] if order else []) + (["filter_input="
+            ~ filter_input] if filter_input else [])%}
+            {{ Pagination(page, per_page, total, query_args) }}
+            <p class="mb-4 text-center">
+                Mostrando {{jya|length}} de {{ total }} jyas.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% from "_macros/pagination.html" import Pagination %}
+{% import "_macros/table.html" as Table %}
+
+{% block head %}
+<title> Miembros - CEDICA </title>
+{% endblock %}
+
+{% block content %}
+<section class="flex flex-col justify-center items-center w-full mt-6">
+    <section class="flex flex-col justify-center mb-6">
+        <h1 class="mt-[1em] mr-4 text-4xl font-bold font-mono flex justify-center">Miembros</h1>
+        <div class="flex  justify-center">
+            <p class="mt-2 mb-2 mr-4 font-bold font-mono">
+                Sección de miembros del sistema.
+            </p>
+        </div>
+        <div class="flex flex-row gap-4 justify-center m-2">
+            {{LinkButton.success("Crear miembro", "/member/create")}}
+            {{LinkButton.info("Volver al inicio", "/")}}
+        </div>
+
+        <form action="{{ url_for('member.show_members') }}" method="GET" class="flex flex-wrap gap-4">
+            {{ Form.new_csrf_token() }}
+
+            <select id="filterSelect" class="rounded-lg" name="filter_field">
+                <option value="nombre" {% if filter_field=="nombre" %}selected{% endif %}>Nombre</option>
+                <option value="apellido" {% if filter_field=="apellido" %}selected{% endif %}>Apellido</option>
+                <option value="dni" {% if filter_field=="dni" %}selected{% endif %}>DNI</option>
+                <option value="email" {% if filter_field=="email" %}selected{% endif %}>Email</option>
+            </select>
+            <input id="filterInput" class="rounded-lg" type="text" value="{{ filter_input }}" name="filter_input">
+
+            <select class="rounded-lg" name="job">
+                <option value="" {% if job=="" %}selected{% endif %}>Todos los puestos laborales </option>
+                <option value="administrativo" {% if job=="administrativo" %}selected{% endif %}>Administrativo</option>
+                <option value="terapeuta" {% if job=="terapeuta" %}selected{% endif %}> Terapeuta </option>
+                <option value="conductor" {% if job=="conductor" %}selected{% endif %}> Conductor </option>
+                <option value="pista" {% if job=="pista" %}selected{% endif %}> Auxiliar de pista </option>
+                <option value="herrero" {% if job=="herrero" %}selected{% endif %}> Herrero </option>
+                <option value="veterinario" {% if job=="veterinario" %}selected{% endif %}> Veterinario </option>
+                <option value="caballos" {% if job=="caballos" %}selected{% endif %}> Entrenador de Caballos </option>
+                <option value="domador" {% if job=="domador" %}selected{% endif %}> Domador </option>
+                <option value="profesor" {% if job=="profesor" %}selected{% endif %}> Profesor de Equitación </option>
+                <option value="capacitacion" {% if job=="capacitacion" %}selected{% endif %}> Docente de Capacitación
+                </option>
+                <option value="mantenimiento" {% if job=="mantenimiento" %}selected{% endif %}> Auxiliar de
+                    mantenimiento
+                </option>
+                <option value="otro" {% if job=="otro" %}selected{% endif %}> Otra </option>
+            </select>
+
+            <select class="rounded-lg" name="order_by">
+                <option value="nombre" {% if order_by=="nombre" %}selected{% endif %}>Ordenar por nombre</option>
+                <option value="apellido" {% if order_by=="apellido" %}selected{% endif %}>Ordenar por apellido
+                </option>
+                <option value="fecha_creacion" {% if order_by=="fecha_creacion" %}selected{% endif %}>Ordenar por fecha
+                    de creación
+                </option>
+            </select>
+            <input type="hidden" name="order" value="{{ order or 'asc' }}">
+
+
+            {{ Button.success("Buscar 🔎","submit") }}
+
+            <button type="submit" name="toggle_order" value="{% if order == 'asc' %}desc{% else %}asc{% endif %}" class="font-medium rounded-lg text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+              focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+                {% if order == 'asc' %}
+                Cambiar a orden descendente
+                <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                    viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z" />
+                </svg>
+                {% else %}
+                Cambiar a orden ascendente
+                <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                    viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z" />
+                </svg>
+                {% endif %}
+            </button>
+
+            {{ LinkButton.warning("Borrar filtros", "/member") }}
+        </form>
+
+    </section>
+    {% call Table.Table() %}
+    {{ Table.TableHead(("Nombre","Apellido","DNI","Email", "Puesto laboral", "Fecha de creación", "Activo", "Es usuario?", "Acciones"))
+    }}
+    <tbody>
+        {% if members|length == 0%}
+        <tr>
+            <td class="text-center font-medium text-xl cursor-default" colspan="9"> No hay miembros.</td>
+        </tr>
+        {% endif %}
+        {% for member, member_usuario, usuario in members %}
+        <tr class="hover:font-medium transition-all duration-300 ease-in-out">
+            <td class="text-center text-sm"> {{member.nombre}}</td>
+            <td class="text-center text-sm"> {{member.apellido}}</td>
+            <td class="text-center text-sm"> {{member.dni}}</td>
+            <td class="text-center text-sm"> {{member.email}}</td>
+            <td class="text-center text-sm"> {{member.puesto_laboral}}</td>
+            <td class="text-center text-sm"> {{member.fecha_creacion.strftime('%d/%m/%Y %H:%M')}} </td>
+            
+            <td>
+                <p class="flex justify-center">
+                    {% if member.activo %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40px" viewBox="0 0 24 24">
+                        <g fill="none" stroke="green" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                            <path fill="green" fill-opacity="0"
+                                d="M3 12c0 -4.97 4.03 -9 9 -9c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9Z">
+                                <animate fill="freeze" attributeName="fill-opacity" dur="0.3s" values="0;0.3" />
+                            </path>
+                            <path stroke-dasharray="14" stroke-dashoffset="14" d="M8 12l3 3l5 -5">
+                                <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.4s"
+                                    values="14;0" />
+                            </path>
+                        </g>
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40px" viewBox="0 0 24 24">
+                        <g fill="none" stroke="RED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                            <path fill="RED" fill-opacity="0" stroke-dasharray="64" stroke-dashoffset="64"
+                                d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z">
+                                <animate fill="freeze" attributeName="fill-opacity" begin="0.6s" dur="0.15s"
+                                    values="0;0.3" />
+                                <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" />
+                            </path>
+                            <path stroke-dasharray="8" stroke-dashoffset="8"
+                                d="M12 12l4 4M12 12l-4 -4M12 12l-4 4M12 12l4 -4">
+                                <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.75s" dur="0.2s"
+                                    values="8;0" />
+                            </path>
+                        </g>
+                    </svg>
+                    {% endif %}
+                </p>
+            </td>
+
+            <td>
+                <p class="flex justify-center">
+                    {% if member_usuario and usuario and usuario.deleted == False %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40px" viewBox="0 0 24 24">
+                        <g fill="none" stroke="green" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                            <path fill="green" fill-opacity="0"
+                                d="M3 12c0 -4.97 4.03 -9 9 -9c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9Z">
+                                <animate fill="freeze" attributeName="fill-opacity" dur="0.3s" values="0;0.3" />
+                            </path>
+                            <path stroke-dasharray="14" stroke-dashoffset="14" d="M8 12l3 3l5 -5">
+                                <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.3s" dur="0.4s"
+                                    values="14;0" />
+                            </path>
+                        </g>
+                    </svg>
+                    {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40px" height="40px" viewBox="0 0 24 24">
+                        <g fill="none" stroke="RED" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                            <path fill="RED" fill-opacity="0" stroke-dasharray="64" stroke-dashoffset="64"
+                                d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z">
+                                <animate fill="freeze" attributeName="fill-opacity" begin="0.6s" dur="0.15s"
+                                    values="0;0.3" />
+                                <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="64;0" />
+                            </path>
+                            <path stroke-dasharray="8" stroke-dashoffset="8"
+                                d="M12 12l4 4M12 12l-4 -4M12 12l-4 4M12 12l4 -4">
+                                <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.75s" dur="0.2s"
+                                    values="8;0" />
+                            </path>
+                        </g>
+                    </svg>
+                    {% endif %}
+                </p>
+            </td>
+
+
+            <td class="flex flex-row gap-4">
+                {{ LinkButton.info("Editar", "/member/" ~ member.id) }}
+                {{ LinkButton.info("Gestionar archivos", "/member/showFiles/" ~ member.id)}}
+                <form action="{{ url_for('member.change_status', member_id = member.id) }}" method="POST"
+                    class="inline">
+                    {{ Form.new_csrf_token() }}
+                    {% set props = {"data-button-change-status": "", "data": "[\""+member.nombre+"\",
+                    \""+member.apellido+"\"]" } %}
+                    {% if member.activo %}
+                    {{ Button.warning("Desactivar", "submit", **props) }}
+                    {% else %}
+                    {{ Button.success("Activar", "submit", **props) }}
+                    {% endif %}
+                </form>
+                <form action=" {{ url_for('member.delete_member', member_id = member.id)}}" method="POST"
+                    class="inline">
+                    {{ Form.new_csrf_token() }}
+                    {% set props = {"data-button-delete": "", "data": "[\""+member.nombre+"\",
+                    \""+member.apellido+"\"]"} %}
+                    {{ Button.danger("Eliminar", "submit", **props) }}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% endcall %}
+
+    {% if total %}
+    <div class="mt-4 flex-none">
+        {% set query_args = (["filter_field=" ~ filter_field] if filter_field else []) + (["job=" ~ job] if job else
+        []) + (["order_by=" ~ order_by] if order_by else []) + (["order=" ~ order] if order else []) + (["filter_input="
+        ~ filter_input] if filter_input else [])%}
+        {{ Pagination(page, per_page, total, query_args) }}
+        <p class="mb-4 text-center">
+            Mostrando {{members|length}} de {{ total }} miembros.
+        </p>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+    const deleteMemberButtons = document.querySelectorAll('[data-button-delete]');
+
+    deleteMemberButtons.forEach((button) => {
+        button.addEventListener('click', (event) => {
+            const data = event.target.getAttribute('data');
+            const [nombre, apellido] = JSON.parse(data);
+            if (!confirm(`¿Está seguro de eliminar al miembro ${nombre} ${apellido}?`)) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    const changeStatusButtons = document.querySelectorAll('[data-button-change-status]');
+
+    changeStatusButtons.forEach((button) => {
+        button.addEventListener('click', (event) => {
+            const data = event.target.getAttribute('data');
+            const [nombre, apellido] = JSON.parse(data);
+            if (!confirm(`¿Está seguro de cambiar el estado del miembro ${nombre} ${apellido}?`)) {
+                event.preventDefault();
+            }
+        })
+    })
+
+    const filterSelect = document.getElementById('filterSelect');
+    const filterInput = document.getElementById('filterInput');
+
+    const placeholders = {
+        'nombre': 'Filtre por nombre...',
+        'apellido': 'Filtre por apellido...',
+        'dni': 'Filtre por DNI...',
+        'email': 'Filtre por email...'
+    };
+
+    filterSelect.addEventListener('change', () => {
+        const value = filterSelect.value;
+        filterInput.placeholder = placeholders[value];
+    });
+
+    filterInput.placeholder = placeholders[filterSelect.value];
+
+</script>
+{% endblock %}

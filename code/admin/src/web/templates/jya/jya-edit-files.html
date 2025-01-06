@@ -1,0 +1,36 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Editar archivo</title>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4 text-center">Modificar Archivo</h1>
+
+<form action="{{ url_for('jya.update_file_jya', id=archivo.id, jya=jya) }}" method="POST" class="w-full max-w-sm mx-auto mt-8" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}  <!-- Esto agrega el campo CSRF -->
+  {{ Form.render_field(form.titulo) }}
+  {{ Form.render_field(form.tipo) }}
+<div>
+  {{ LinkButton.danger("Volver", url_for('jya.show_files_jya', id=jya), class="") }}
+  {{ Button.success("Guardar Cambios", "submit", **{"data-button-edit-jya": ""}) }}
+</div>
+</form>
+
+<script>
+  const editJyAButtons = document.querySelectorAll('[data-button-edit-jya]');
+
+  editJyAButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const jyaName = event.target.getAttribute('data-name');
+      if (!confirm(`¿Estás seguro de que quieres editar el archivo?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+
+{% endblock %}

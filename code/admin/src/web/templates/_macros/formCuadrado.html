@@ -1,0 +1,24 @@
+{% macro render_fields(form, longitud) %}
+    {% for field in form %}
+        
+        {% if loop.index % 2 != 0 %}
+            <div class="flex flex-row m-4 gap-4">
+            {% set open = True %}
+        {% endif %}
+
+        <div class="flex flex-col w-full">
+            <div class="mb-3">
+                {{field.label(class_="font-medium text-sm")}}
+            </div>
+            {{field(class_="rounded-lg w-full")}}
+        </div>
+
+        {% if loop.index % 2 == 0 %}
+            </div>
+        {% endif %}
+    {% endfor %}
+    
+    {% if longitud % 2 != 0 %}
+        </div>
+    {% endif %}
+{% endmacro %}

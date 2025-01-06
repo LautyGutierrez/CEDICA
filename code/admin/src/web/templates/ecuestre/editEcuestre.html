@@ -1,0 +1,90 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Editar Ecuestre</title>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4 text-center">Modificar Ecuestre</h1>
+
+<form action="{{ url_for('ecuestre.update_ecuestre', ecuestre_id=ecuestre.id) }}" method="POST" class="w-full max-w-sm mx-auto mt-8" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}  <!-- Esto agrega el campo CSRF -->
+  {{ Form.render_field(form.nombre) }}
+  {{ Form.render_field(form.fecha_nacimiento) }}
+  <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+    <label class="mb-2">Sexo</label>
+    <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300 " name="sexo_id" id="select" required>
+      {% for s in sexos %}
+      <option  value="{{ s[0] }}" {% if s[0] == ecuestre.sexo_id %} selected {% endif %}>{{ s[1] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+    <label class="mb-2">Raza</label>
+    <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300 " name="raza_id" id="select" required>
+      {% for r in razas %}
+      <option  value="{{ r[0] }}" {% if r[0] == ecuestre.raza_id %} selected {% endif %}>{{ r[1] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+    <label class="mb-2">Pelaje</label>
+    <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300 " name="pelaje_id" id="select" required>
+      {% for p in pelajes %}
+      <option  value="{{ p[0] }}" {% if p[0] == ecuestre.pelaje_id %} selected {% endif %}>{{ p[1] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {{ Form.render_field(form.compra_o_donacion) }}
+  {{ Form.render_field(form.fecha_ingreso) }}
+  {{ Form.render_field(form.sede) }}
+  <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+    <label class="mb-2">Entrenador</label>
+    <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300 " name="entrenador" id="select" required>
+      {% for e in entrenadores %}
+      <option  value="{{ e[0] }}" {% if e[0] == ecuestre.entrenador %} selected {% endif %}>{{ e[1] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+    <label class="mb-2">Conductor</label>
+    <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300 " name="conductor" id="select" required>
+      {% for c in conductores %}
+      <option  value="{{ c[0] }}" {% if c[0] == ecuestre.conductor %} selected {% endif %}>{{ c[1] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  {{ Form.render_field(form.tipo_JA) }}
+  
+  <div class="flex flex-col w-full gap-4 justify-around">
+    {{ Button.success("Guardar Cambios", "submit", **{"data-button-update-ecuestre": "", "data-name": ecuestre.nombre}) }}
+    {{ LinkButton.info("Volver", "/ecuestre/showEcuestre", class="") }}
+  </div>
+  
+</div>
+
+</form>
+
+
+<script>
+  /** @type {NodeListOf<HTMLButtonElement>} */
+  const updateEcuestreButtons = document.querySelectorAll('[data-button-update-ecuestre]');
+
+  updateEcuestreButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const ecuestreName = event.target.getAttribute('data-name');
+      if (!confirm(`¿Estás seguro de que quieres editar al ecuestre ${ecuestreName}?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% from "_macros/pagination.html" import Pagination %}
+{% import "_macros/table.html" as Table %}
+{% import "_macros/cards.html" as Card %}
+
+{% block head %}
+<title> Contenidos - CEDICA </title>
+{% endblock %}
+
+{% block content %}
+<section class="flex flex-col justify-center items-center w-full mt-6">
+    <section class="flex flex-col justify-center mb-6">
+        <h1 class="mt-[1em] mr-4 text-4xl font-bold font-mono flex justify-center">Contenido</h1>
+        <div class="flex  justify-center">
+            <p class="mt-2 mb-2 mr-4 font-bold font-mono">
+                Sección de contenidos del sistema.
+            </p>
+        </div>
+
+        <div class="flex flex-row gap-4 justify-center m-2">
+            {{LinkButton.success("Crear contenido", "/content/create")}}
+            {{LinkButton.info("Volver al inicio", "/")}}
+        </div>
+
+        <form action="{{ url_for('content.show_contents') }}" method="GET" class="flex flex-wrap gap-4">
+            {{ Form.new_csrf_token() }}
+            <p class="self-center"> Filtrar por estado: </p>
+            <select name="filterSelect" id="filterSelect" class="rounded-lg">
+                <option value="" {% if state=="" %}selected{% endif %}>Todos</option>
+                <option value="borrador" {% if state=="borrador" %}selected{% endif %}>Borrador</option>
+                <option value="publicado" {% if state=="publicado" %}selected{% endif %}>Publicado</option>
+                <option value="archivado" {% if state=="archivado" %}selected{% endif %}>Archivado</option>
+            </select>
+
+            <input type="text" name="filter_input" id="filter_input" class="rounded-lg" placeholder="Buscar contenido..."
+                value="{{ filter_input }}">
+
+            {{ Button.success("Buscar 🔎","submit") }}
+            {{ LinkButton.warning("Borrar filtros", "/content") }}
+        </form>
+
+        {% if contents|length == 0 %}
+        <div class="flex flex-col items-center justify-center mt-5">
+            <p class="text-2xl font-bold">No hay contenidos registrados</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 justify-items-center">
+        {% for content, content_user, user in contents %}
+        {{Card.default(content, user)}}
+        {% endfor %}
+    </div>
+
+    {% if total %}
+    <div class="mt-4 flex-none">
+        {% set query_args = (["filter_field=" ~ filter_field] if filter_field else []) + (["filter_input="
+        ~ filter_input] if filter_input else [])%}
+        {{ Pagination(page, per_page, total, query_args) }}
+        <p class="mb-4 text-center">
+            Mostrando {{contents|length}} de {{ total }} contenidos.
+        </p>
+    </div>
+    {% endif %}
+</section>
+
+<script>
+    const changeStatusButtons = document.querySelectorAll('[data-button-change-status]');
+
+    changeStatusButtons.forEach((button) => {
+        button.addEventListener('click', (event) => {
+            const data = event.target.getAttribute('data');
+            if (!confirm(`¿Está seguro de cambiar el estado del contenido?`)) {
+                event.preventDefault();
+            }
+        })
+    })
+
+    const deleteContent = document.querySelectorAll('[data-button-delete]');
+
+    deleteContent.forEach((button) => {
+        button.addEventListener('click', (event) => {
+            const data = event.target.getAttribute('data');
+            if (!confirm(`¿Está seguro de eliminar al contenido?`)) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  @apply h-auto;
+}
+
+body {
+  @apply  text-zinc-800;
+  
+}
+
+body > div {
+  @apply h-full max-w-7xl mx-auto  flex flex-col ;
+}
+
+body *::-webkit-scrollbar {
+  @apply w-2 h-2 bg-transparent;
+}
+
+body *::-webkit-scrollbar:hover,
+body *::-webkit-scrollbar:active {
+  @apply bg-gray-500/25;
+}

@@ -1,0 +1,82 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Actualizar usuario</title>
+<script src="{{ url_for('static', filename='js/user_setting.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Actualizar Cobro</h1>
+    </div>
+    <p class="text-center text-gray-500 mb-5">
+      Por favor, complete el siguiente formulario para Actualizar los datos del cobro.
+    </p>
+    <div class="flex justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {{ LinkButton.primary("Volver a cobros", "/cobros") }}
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col mx-auto">
+    <form id="update-charge-form" method="post" class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4">
+      {{ form.csrf_token }}
+
+      {{ Form.render_field(form.amount) }}
+      {{ Form.render_field(form.observation) }}
+      <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+        <label class="mb-2">Jinete y Amazona</label>
+        <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300" name="id_jya" id="select" required>
+          {% for j in jya %}
+          <option value="{{ j[0] }}" {% if j[0]==charge.id_jya %} selected {% endif %}>
+            {{ j[1] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+        <label class="mb-2">Miembro</label>
+        <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300" name="id_member" id="select" required>
+          {% for member in members %}
+          <option value="{{ member[0] }}" {% if member[0]==charge.id_member %} selected {% endif %}>
+            {{ member[1] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+        <label class="mb-2">Metodo de pago</label>
+        <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300" name="id_payment_method" id="select" required>
+          {% for method_of_payment in methods_of_payments %}
+          <option value="{{ method_of_payment[0] }}" {% if method_of_payment[0]==charge.id_payment_method %} selected {% endif %}>
+            {{ method_of_payment[1] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {{ Form.render_field(form.date) }}
+
+      <div class="flex flex-col xs:flex-row gap-4 mt-4 justify-around">
+        {{ Button.danger("Revertir", "reset") }}
+        {{ Button.success("Confirmar", "submit") }}
+      </div>
+    </form>
+  </div>
+</main>
+
+<script>
+  document.getElementById('update-charge-form').addEventListener('submit', function(event) {
+    if (!confirm('¿Estás seguro de que deseas actualizar el cobro?')) {
+      event.preventDefault(); 
+    }
+  });
+</script>
+
+{% endblock %}

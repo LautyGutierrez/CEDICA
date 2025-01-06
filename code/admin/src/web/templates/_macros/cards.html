@@ -1,0 +1,83 @@
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/form.html" as Form %}
+
+{% macro default(content, user) %}
+{% set hover_class = "" %}
+{% set text_button = "" %}
+{% set background_color = ""%}
+{% set fecha = "" %}
+{% if content.date_update %}
+    {% set fecha = "Editado: " + content.date_update.strftime('%d/%m/%Y') %}
+{% else %}
+    {% set fecha = "Creado: " + content.date_creation.strftime('%d/%m/%Y') %}
+{% endif %}
+{% if content.state == "borrador" %}
+    {% set hover_class = "hover:shadow-yellow-500/50" %}
+    {% set text_button = "Publicar" %}
+    {% set background_color = "bg-yellow-50"%}
+{% elif content.state == "publicado" %}
+    {% set hover_class = "hover:shadow-green-500/50" %}
+    {% set text_button = "Archivar" %}
+    {% set background_color = "bg-green-50"%}
+    {% set fecha = "Publicado: " + content.date_publication.strftime('%d/%m/%Y') %}
+{% elif content.state == "archivado" %}
+    {% set hover_class = "hover:shadow-gray-500/50" %}
+    {% set text_button = "Desarchivar" %}
+    {% set background_color = "bg-gray-100"%}
+{% endif %}
+<div
+    class="relative flex flex-col my-6 {{background_color}} shadow-sm border border-slate-200 rounded-lg w-96 hover:shadow-lg transition-transform duration-300 transform hover:scale-105 {{ hover_class }}">
+    <div class="p-4">
+        <h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900"> {{ content.title }}</h2>
+        <h5 class="mb-2 text-slate-800 text-xl font-semibold">
+            {{ content.summary }}
+        </h5>
+        <p class="text-slate-600 leading-normal font-light text-lg break-words">
+            {{ content.content_text }}
+        </p>
+        <p class="text-slate-600 leading-normal font-light">
+            Estado: {{ content.state[0]|upper }}{{ content.state[1:] }} <br>
+            {{ fecha }}
+        </p>
+        <div class="flex flex-row gap-4 mt-2">
+            <form action="{{ url_for('content.change_status', content_id = content.id) }}" method="POST" class="inline">
+                {{ Form.new_csrf_token() }}
+                {% set props = {"data-button-change-status": ""} %}
+                {{ Button.primary(text_button, "submit", **props) }}
+            </form>
+            {{ LinkButton.primary("Editar", "/content/" ~ content.id) }}
+            <form action="{{ url_for('content.delete_content', content_id = content.id) }}" method="POST"
+                class="inline">
+                {{ Form.new_csrf_token() }}
+                {% set props = {"data-button-delete": ""} %}
+                {{ Button.danger("Eliminar", "submit", **props) }}
+            </form>
+        </div>
+    </div>
+    <div class="mx-3 border-t border-slate-200 pb-3 pt-2 px-1">
+        <span class="text-sm text-slate-600 font-medium">
+            Subido por: {{ user.email }}
+        </span>
+    </div>
+</div>
+
+{% endmacro %}
+
+{% macro link(title, viewbox, pathicon, redirect, text) %}
+
+<a href="{{ redirect }}" class="inline-flex font-medium items-center text-blue-600">
+    <div
+        class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:shadow-blue-500/50 hover:shadow-lg transition-transform duration-300 transform hover:scale-105">
+        <svg class="w-7 h-7 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+            viewBox="{{ viewbox }}">
+            {{pathicon | safe}}
+        </svg>
+
+        <h5 class="mb-2 text-2xl font-semibold tracking-tight text-gray-900"> {{ title }}</h5>
+        <p class="mb-3 font-normal text-gray-500">Acá vas a poder administrar todo lo relacionado con
+            {{ text }} de la aplicación. </p>
+    </div>
+</a>
+
+{% endmacro %}

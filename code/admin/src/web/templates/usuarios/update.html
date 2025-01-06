@@ -1,0 +1,73 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Actualizar usuario</title>
+<script src="{{ url_for('static', filename='js/user_setting.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex  justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Actualizar Usuario</h1>
+    </div>
+    <p class="text-center text-gray-500 mb-5">Por favor, complete el siguiente formulario para Actualizar los datos del
+      usuario.</p>
+    <div class="flex  justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {{ LinkButton.primary("Volver a usuarios", "/admin/users") }}
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="flex flex-col mx-auto">
+    <form method="post" class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4">
+      {{ form.csrf_token }}
+
+      {{ Form.render_field(form.firstname) }}
+      {{ Form.render_field(form.lastname) }}
+      {{ Form.render_field(form.email) }}
+      {{ Form.render_field(form.alias) }}
+
+      <div id="field_select" class="flex flex-col mt-1 [&_label]:font-medium [&_label]:md:text-lg">
+        <label class="mb-2">Rol</label>
+        <select class="rounded-md bg-zinc-50 focus:outline-none border border-zinc-300 " name="role" id="select"
+          required>
+          <option value="" hidden></option>
+          {% for rol in roles %}
+          <option value="{{ rol[0] }}" {% if rol[1]==user.role %} selected {% endif %}>{{ rol[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+
+
+
+      <div class="flex flex-col xs:flex-row gap-4 mt-4 justify-around">
+        {{ Button.danger("Revertir", "reset") }}
+        {{ Button.success("Confirmar", "submit",id="confirmButton") }}
+      </div>
+    </form>
+  </div>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const confirmButton = document.getElementById('confirmButton');
+  
+  if (confirmButton) {
+    confirmButton.addEventListener('click', function (event) {
+      const userConfirmed = confirm("¿Estás seguro de que quieres actualizar los datos del usuario?");
+      if (!userConfirmed) {
+        event.preventDefault();
+      }
+    });
+  }
+});
+
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+{% import "_macros/form.html" as Form %}
+
+{% block head %}
+<title>Documentos</title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Documentos</h1>
+    </div>
+    <div class="flex justify-center">
+      <p class="mt-1 mb-4 mr-4 font-bold font-mono">
+        Sección de documentos asociados al ecuestre.
+      </p>
+    </div>
+    <div class="flex justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {% if g.user_has_permissions(["ecuestre_create"]) %}
+        {{ LinkButton.success("Subir documento", url_for('ecuestre.subir_documento', ecuestre_id=ecuestre), class="") }}
+        {{ LinkButton.success("Subir enlace", url_for('ecuestre.subir_enlace', ecuestre_id=ecuestre), class="") }}
+        {% endif %}
+        {{ LinkButton.primary("Volver a inicio", url_for('ecuestre.show_ecuestre'), class="") }}
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-center">
+      <form method="GET" action="{{ url_for('ecuestre.show_files', ecuestre_id=ecuestre) }}" class="flex flex-col gap-4">
+        <div>
+          <select name="tipo" class="px-6 py-2 rounded-lg border-gray-300">
+            <option value="" {% if tipo == "" %}selected{% endif %}>Todos los tipos de archivos</option>
+            <option value="ficha" {% if tipo == "ficha" %}selected{% endif %}>Ficha</option>
+            <option value="planificacion" {% if tipo == "planificacion" %}selected{% endif %}>Planificación</option>
+            <option value="informe" {% if tipo == "informe" %}selected{% endif %}> Informe</option>
+            <option value="imagen" {% if tipo == "imagen" %}selected{% endif %}>Imagen</option>
+            <option value="registros_veterinarios" {% if tipo == "registros_veterinarios" %}selected{% endif %}>Registros veterinarios</option>
+        </select>
+          <select name="criterio" class="px-7 py-2 rounded border border-gray-300">
+            <option value="titulo" {% if criterio == 'titulo' %}selected{% endif %}>Buscar por titulo</option>
+          </select>
+          <input type="text" name="busqueda" placeholder="Buscar" value="{{ busqueda }}" class="px-2 py-2 rounded border border-gray-300 mt-2">
+          <select name="ordenar_por" class="px-4 py-2 rounded border border-gray-300">
+            <option value="titulo" {% if ordenar_por == 'titulo' %}selected{% endif %}>Ordenar por titulo</option>
+            <option value="fecha_subida" {% if ordenar_por == 'fecha_subida' %}selected{% endif %}>Ordenar por fecha de subida</option>
+          </select>
+          <input type="hidden" name="orden" value="{{ orden }}">
+          <button type="submit" name="toggle_order" value="{% if orden == 'asc' %}desc{% else %}asc{% endif %}" class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 dark:focus:ring-green-800">
+            {% if orden == 'asc' %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z"/></svg>
+            {% else %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z"/></svg>
+            {% endif %}
+          </button>
+          <button type="submit" class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 dark:focus:ring-blue-800">
+            <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20a8 8 0 1 1 8-8a8 8 0 0 1-8 8Zm0-2a6 6 0 1 0-6-6a6 6 0 0 0 6 6Zm11 2l-5-5l1.4-1.4l5 5Z"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="mt-4 mx-auto md:max-h-[48rem]">
+      {% call Table.Table(class="w-full max-w-sm mx-auto mt-8 rounded-lg p-4") %}
+      {{ Table.TableHead(["Titulo", "Fecha de subida", "Tipo", "Acciones"], class="bg-blue-200", col_class="px-6 py-3") }}
+      <tbody>
+        {% if archivos|length == 0 %}
+        <tr>
+          <td class="text-center font-medium" colspan="6">No se encontraron documentos asociados al ecuestre</td>
+        </tr>
+        {% endif %}
+        {% for a in archivos %}
+        <tr class="border-b border-gray-200 py-2">
+          <td class="text-lg px-6 py-4">{{ a.titulo }}</td>
+          <td class="text-lg px-6 py-4">{{ a.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td class="text-lg px-6 py-4">{{ a.tipo }}</td>
+          <td class="px-6 py-4">
+            <div class="flex gap-2">
+              {% if a.tipo != 'enlace' %}
+              {{ LinkButton.info("Descargar", url_for('ecuestre.download_file', file_id=a.id)) }}
+              {% if g.user_has_permissions(["ecuestre_destroy"]) %}
+              <form action="{{ url_for('ecuestre.delete_file', file_id=a.id, ecuestre_id=ecuestre) }}" method="POST" class="inline">
+                {{ Form.new_csrf_token() }} <!-- CSRF token -->
+                {{ Button.danger("Eliminar", "submit", class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600", **{"data-button-delete-document": "", "data-name": a.titulo}) }}
+              </form>             
+              {% endif %}
+              {% else %}
+              {{ LinkButton.info("Ir al documento", a.enlace) }}
+              {% if g.user_has_permissions(["ecuestre_destroy"]) %}
+              <form action="{{ url_for('ecuestre.delete_enlace', file_id=a.id, ecuestre_id=ecuestre) }}" method="POST" class="inline">
+                {{ Form.new_csrf_token() }} <!-- CSRF token -->
+                {{ Button.danger("Eliminar", "submit", class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600", **{"data-button-delete-document": "", "data-name": a.titulo}) }}
+              </form>
+              {% endif %}
+              {% endif %}
+              {% if g.user_has_permissions(["ecuestre_update"]) %}
+              {{ LinkButton.info("Editar", url_for('ecuestre.edit_file', ecuestre_id= ecuestre, file_id=a.id)) }}
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% endcall %}
+    </div>
+  </div>
+
+</div>
+{% if total %}
+<div class="mt-4 flex-none">
+  {% set query_args = (["criterio=" ~ criterio] if criterio else []) + (["busqueda=" ~ busqueda] if busqueda else []) + (["ordenar_por=" ~ ordenar_por] if ordenar_por else []) + (["orden=" ~ orden] if orden else []) %}
+  {{ Pagination(page, per_page, total, query_args) }}
+</div>
+{% endif %}
+
+
+</main>
+<script>
+  /** @type {NodeListOf<HTMLButtonElement>} */
+  const deleteDocumentButtons = document.querySelectorAll('[data-button-delete-document]');
+
+  deleteDocumentButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const documentName = event.target.getAttribute('data-name');
+      if (!confirm(`¿Estás seguro de que quieres eliminar el documento ${documentName}?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

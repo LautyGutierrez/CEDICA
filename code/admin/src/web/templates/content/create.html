@@ -1,0 +1,28 @@
+{% extends "_layouts/auth.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title> Subir contenido </title>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center mt-10">
+    <h1 class="text-3xl font-bold text-center mb-2"> Subir contenido </h1>
+    <div class="flex flex-col items-center md:basis-1/2 shadow-2xl rounded-3xl">
+        <form method="POST" action="{{ url_for('content.create_content_post') }}"
+            class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4" id="addForm">
+            {{ Form.render_fields(form)}}
+            {% set props = {"data-button-register": ""} %}
+            {{ Button.success("Subir","submit", **props)}}
+            {{ LinkButton.info("Volver", "/content") }}
+        </form>
+    </div>
+</div>
+<style>
+    label[for="csrf_token"] {
+        display: none;
+    }
+</style>
+{% endblock %}

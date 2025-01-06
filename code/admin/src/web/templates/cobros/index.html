@@ -1,0 +1,233 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title>Cobros - CEDICA </title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex  justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Cobros</h1>
+
+    </div>
+    <div class="flex flex-col items-center  justify-center">
+      <p class="mt-1 mb-4 mr-4 font-bold font-mono">
+        Sección de cobros a Jinetes y Amazonas.
+
+      </p>
+      <p class="mt-1 mb-4 mr-4 font-bold font-mono">
+        Ten en cuenta que al registrar un cobro se le asigna a un Jinete/Amazona y se registra el monto, el método de pago y la fecha de pago.
+      </p>
+    </div>
+    <div class="flex  justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {% if g.user and g.user_has_permissions(["cobros_create"]) %}
+        {{ LinkButton.success("Registrar cobros", "/cobros/register") }}
+        {% endif %}
+        {% if g.user and g.user_has_permissions(["jinete-y-amazona_index","jinete-y-amazona_show"]) %}
+        {{ LinkButton.warning("Ver Jya deudores", "/cobros/deudores") }}
+        {% endif %}
+        {{ LinkButton.primary("Volver a inicio", "/", class="") }}
+      </div>
+    </div>
+
+  </div>
+  <div class="flex flex-wrap justify-center">
+    <form method="get" action="/cobros">
+      {{ Form.new_csrf_token() }}
+
+      <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 items-center w-full sm:w-auto">
+        <div>
+          <input class="rounded-lg mt-5 h-11 mr-2 border-gray-300 w-72" type="text" name="nombre"
+            placeholder="Filtrar por nombre de miembro" value="{{ nombre or "" }}">
+          <input class="rounded-lg mt-5 h-11 border-gray-300 w-72" type="text" name="apellido"
+            placeholder="Filtrar por apellido de miembro" value="{{ apellido or "" }}">
+        </div>
+        <div class="flex flex-col items-center w-full sm:w-auto">
+          <label for="start-date" class="text-gray-700 text-sm font-medium mb-0">
+            Desde
+          </label>
+          <input type="date" id="start-date" name="start_date" value="{{ start_date }}"
+            class="w-full sm:w-auto p-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+        </div>
+
+
+        <div class="flex flex-col items-center w-full sm:w-auto">
+          <label for="end-date" class="text-gray-700 text-sm font-medium mb-0">
+            Hasta
+          </label>
+          <input type="date" id="end-date" name="end_date" value="{{ end_date }}"
+            class="w-full sm:w-auto p-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+        </div>
+
+
+        <div class="flex flex-col items-center w-full sm:w-auto">
+          <select class="rounded-lg mt-2 sm:mt-6 m-1 h-11 border-gray-300" name="metodo_pago">
+            <option value="">Todos</option>
+            <option value="Efectivo" {% if metodo_pago=="Efectivo" %}selected{% endif %}>Efectivo</option>
+            <option value="Tarjeta de Crédito" {% if metodo_pago=="Tarjeta de Crédito" %}selected{% endif %}>Tarjeta de
+              Crédito</option>
+            <option value="Tarjeta de Débito" {% if metodo_pago=="Tarjeta de Débito" %}selected{% endif %}>Tarjeta de
+              Débito</option>
+            <option value="Transferencia Bancaria" {% if metodo_pago=="Transferencia Bancaria" %}selected{% endif %}>
+              Transferencia Bancaria</option>
+            <option value="Mercado Pago" {% if metodo_pago=="Mercado Pago" %}selected{% endif %}>Mercado Pago</option>
+          </select>
+        </div>
+        <div class="flex flex-row items-center w-full sm:w-auto">
+          <div class="mt-0 sm:mt-5 ml-5 sm:ml-0">{{ Button.success("🔎","submit") }}</div>
+          <div class="flex flex-col items-center w-full sm:w-auto m-0 sm:m-2 ">
+            <input type="hidden" name="order" value="{{ order or 'asc' }}">
+
+            <button type="submit" name="toggle_order" value="{% if order == 'asc' %}desc{% else %}asc{% endif %}" class="mt-0 sm:mt-5 font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+              focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+              {% if order == 'asc' %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                viewBox="0 0 24 24">
+                <path fill="currentColor"
+                  d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z" />
+              </svg>
+              {% else %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                viewBox="0 0 24 24">
+                <path fill="currentColor"
+                  d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z" />
+              </svg>
+              {% endif %}
+            </button>
+          </div>
+          <div class="mt-5 ">
+            {{ LinkButton.warning("Borrar filtros", "/cobros") }}
+            </div>
+        </div>
+      </div>
+
+
+
+
+
+    </form>
+  </div>
+  <div class="">
+    {% call Table.Table() %}
+    {{ Table.TableHead(("Nombre y Apellido de miembro", "Email de miembro","Nombre y Apellido de JyA", "DNI de
+    JyA","Metodo de Pago","Monto", "Observacion","Estado","Fecha de Pago","Acciones")) }}
+    <tbody>
+      {% if charges|length == 0 %}
+      <tr>
+        <td class="text-center font-semibold cursor-default" colspan="10">No hay cobros todavía</td>
+      </tr>
+      {% endif %}
+      {% for charge, miembro, jya, metodo_pago in charges %}
+      <tr>
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center">{{ miembro.nombre + " " + miembro.apellido }}</p>
+        </td>
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center">{{ miembro.email }}</p>
+        </td>
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center">{{ jya.name + " " + jya.lastname}}</p>
+        </td>
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center">{{ jya.document_number }}</p>
+        </td>
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center ">{{ metodo_pago.name }}</p>
+        </td>
+        <td class="text-[15px] font-medium">
+          <p class="flex justify-center bg-lime-100 ring-2 ring-lime-300 rounded-md shadow-lg w-full ">
+            ${{ "{:,.2f}".format(charge.amount) }}
+          </p>
+        </td>
+
+        {% if charge.observation != None %}
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center ">{{ charge.observation }}</p>
+        </td>
+        {% else %}
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center text-gray-500">Sin observaciones</p>
+        </td>
+        {% endif %}
+        {% if charge.state == "Pendiente" %}
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center bg-amber-100 ring-2 ring-amber-300 rounded-md shadow-lg w-24">{{ charge.state
+            }}</p>
+        </td>
+        {% elif charge.state == "Cobrado" %}
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center bg-green-100 ring-2 ring-green-300 rounded-md shadow-lg">{{ charge.state }}</p>
+        </td>
+        {% endif %}
+        <td class="text-[15px] font-medium">
+          <p class=" flex justify-center ">{{ charge.date.strftime('%d/%m/%Y %H:%M') }}</p>
+        </td>
+
+        <td>
+          <div class="flex gap-2">
+            {% if g.user and g.user_has_permissions(["cobros_update"]) %}
+            {{ LinkButton.info("Editar", "/cobros/" ~ charge.id, class="h-10" ) }}
+            <form method="POST" action="/cobros/{{ charge.id }}/mark_as_charge" style="display: inline;" class="charge-form">
+              {{ Form.new_csrf_token() }}
+              {% if charge.state == "Cobrado" %}
+              {{ Button.warning("Marcar pendiente", type="submit", class="mark-pending") }}
+              {% else %}
+              {{ Button.success("Cobrar", type="submit", class="charge") }}
+              {% endif %}
+            </form>
+            {% endif %}
+            {% if g.user and g.user_has_permissions(["pagos_destroy"]) %}
+            <form method="POST" action="/cobros/{{ charge.id }}/delete" style="display: inline;">
+              {{ Form.new_csrf_token() }}
+              {% set props = {"data-button-delete-charge": "", "data-charge-amount": charge.amount, "data-member-name": miembro.nombre} %}
+              {{ Button.danger("Eliminar", type="submit", **props) }}
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% endcall %}
+  </div>
+
+  {% if total %}<div class="mt-4 flex-none">
+    {% set query_args = (["email=" ~ email] if email else []) + (["active=" ~ active] if active else []) %}
+    {{ Pagination(page, per_page, total, query_args) }}
+  </div>{% endif %}
+</main>
+
+<script>
+
+  const deleteUserButtons = document.querySelectorAll('[data-button-delete-charge]');
+
+  deleteUserButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const amount = event.target.getAttribute('data-charge-amount');
+      const name = event.target.getAttribute('data-member-name');
+      if (!confirm(`¿Estás seguro de que quieres eliminar el cobro perteneciente a ${name} con monto ${amount}?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+  const chargeForms = document.querySelectorAll('.charge-form');
+  chargeForms.forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      const isMarkPending = event.target.querySelector('.mark-pending');
+      const isCharge = event.target.querySelector('.charge');
+      if (isMarkPending && !confirm('¿Estás seguro de que quieres marcar este cobro como pendiente?')) {
+        event.preventDefault();
+      } else if (isCharge && !confirm('¿Estás seguro de que quieres cobrar este monto?')) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

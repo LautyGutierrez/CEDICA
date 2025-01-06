@@ -1,0 +1,122 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title> Archivos - Miembros </title>
+{% endblock %}
+
+{% block content %}
+<section class="flex flex-col justify-center items-center w-full mt-6">
+    <section class="flex flex-col justify-center mb-6">
+        <h1 class="mt-[1em] mr-4 text-4xl font-bold font-mono flex justify-center"> Archivos del miembro {{
+            member.nombre }} {{
+            member.apellido }}</h1>
+        <p class="text-center  mb-5 mt-3 font-mono">
+            En esta sección podrá visualizar los archivos subidos por el miembro {{ member.nombre }} {{ member.apellido }}.
+        <div class="flex flex-row gap-4 justify-center m-2">
+            {{LinkButton.success("Subir archivo", "/member/uploadFiles/" ~ member.id)}}
+            {{LinkButton.success("Subir enlace", "/member/uploadLink/" ~ member.id)}}
+            {{LinkButton.info("Volver al listado de miembros", "/member")}}
+        </div>
+
+        <form action="" method="GET" class="flex flex-wrap gap-4">
+            <input id="filterInput" class="rounded-lg" type="text" name="filter_input" value="{{ filter_input }}"
+                placeholder="Filtre por título">
+
+            <select class="rounded-lg" name="filter_type">
+                <option value="" {% if filter_type=="" %}selected{% endif %}>Todos los tipos </option>
+                <option value="personal" {% if filter_type=="personal" %}selected{% endif %}> Documentación personal </option>
+                <option value="educativa" {% if filter_type=="educativa" %}selected{% endif %}> Documentación educativa </option>
+                <option value="laboral" {% if filter_type=="laboral" %}selected{% endif %}> Documentación laboral </option>
+                <option value="extra" {% if filter_type=="extra" %}selected{% endif %}> Documentación extra </option>
+                <option value="enlace" {% if filter_type=="enlace" %}selected{% endif %}> Enlace </option>
+            </select>
+
+            {{ Button.success("Buscar 🔎","submit") }}
+
+            <button type="submit" name="toggle_order" value="{% if order_type == 'asc' %}desc{% else %}asc{% endif %}"
+                class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+            focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+                {% if order_type == 'asc' %}
+                Cambiar a orden descendente
+                <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                    viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z" />
+                </svg>
+                {% else %}
+                Cambiar a orden ascendente
+                <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                    viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z" />
+                </svg>
+                {% endif %}
+            </button>
+
+            {{ LinkButton.warning("Borrar filtros", "/member/showFiles/" ~ member.id) }}
+        </form>
+    </section>
+
+    {% call Table.Table() %}
+    {{ Table.TableHead(("Título","Fecha de subida","Tipo","Acciones"))}}
+    <tbody>
+        {% if archivos|length == 0%}
+        <tr>
+            <td colspan="4" class="text-center cursor-default">
+                No hay archivos para mostrar
+            </td>
+        </tr>
+        {% endif %}
+        {% for archivo in archivos %}
+        <tr class="hover:font-medium transition-all duration-300 ease-in-out">
+            <td class="text-center"> {{ archivo.titulo }} </td>
+            <td class="text-center"> {{ archivo.fecha_subida }} </td>
+            <td class="text-center"> {{ archivo.tipo }} </td>
+            <td class="flex flex-row gap-4">
+                {% if archivo.tipo != "enlace" %}
+                {{ LinkButton.info("Descargar", url_for('member.download_file', member_id = member.id, archivo_id = archivo.id))}}
+                {% else %}
+                {{ LinkButton.info("Ir al documento", archivo.enlace)}}
+                {% endif %}
+                {{ LinkButton.info("Editar", "/member/editFile/" ~ member.id ~ "/" ~ archivo.id) }}
+                <form action="{{ url_for('member.delete_file', member_id = member.id, archivo_id= archivo.id) }}"
+                    method="POST" class="inline">
+                    {{ Form.new_csrf_token() }}
+                    {% set props = {"data-button-delete": "", "data": archivo.titulo} %}
+                    {{ Button.danger("Eliminar", "submit", **props) }}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% endcall %}
+
+    {% if total %}
+    <div class="mt-4 flex-none">
+        {{ Pagination(page, per_page, total) }}
+        <p class="mb-4">
+            Mostrando {{archivos|length}} de {{ total }} archivos.
+        </p>
+    </div>
+    {% endif %}
+</section>
+<script>
+
+    const deleteFileButtons = document.querySelectorAll('[data-button-delete]');
+
+    deleteFileButtons.forEach((button) => {
+        button.addEventListener('click', (event) => {
+            const data = event.target.getAttribute('data');
+            if (!confirm(`¿Está seguro de eliminar al archivo ${data}?`)) {
+                event.preventDefault();
+            }
+        });
+    });
+
+</script>
+{% endblock %}

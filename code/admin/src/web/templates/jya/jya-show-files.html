@@ -1,0 +1,130 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+{% import "_macros/form.html" as Form %}
+
+{% block head %}
+<title>Documentos</title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Documentos</h1>
+    </div>
+    <div class="flex justify-center">
+      <p class="mt-1 mb-4 mr-4 font-bold font-mono">
+        Sección de documentos asociados al Jinete/Amazona.
+      </p>
+    </div>
+    <div class="flex justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {% if g.user_has_permissions(["jinete-y-amazona_create"]) %}
+        {{ LinkButton.success("Subir documento", url_for('jya.subir_documento_jya', id=jya), class="") }}
+        {{ LinkButton.success("Subir enlace", url_for('jya.subir_enlace_jya', id=jya), class="") }}
+        {% endif %}
+        {{ LinkButton.primary("Volver", url_for('jya.jya_list_view'), class="") }}
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-center">
+      <form method="GET" action="{{ url_for('jya.show_files_jya', id=jya) }}" class="flex flex-col gap-4">
+        <div>
+          <h0>Selecciona el criterio de búsqueda</h0>
+          <select name="criterio" class="px-2 py-2 rounded border border-gray-300">
+            <option value="titulo" {% if criterio == 'titulo' %}selected{% endif %}>Titulo</option>
+            <option value="tipo" {% if criterio == 'tipo' %}selected{% endif %}>Tipo</option>
+          </select>
+          <input type="text" name="busqueda" placeholder="Buscar" value="{{ busqueda }}" class="px-2 py-2 rounded border border-gray-300 mt-2">
+          <h0>Ordenar por</h0>
+          <select name="ordenar_por" class="px-2 py-2 rounded border border-gray-300">
+            <option value="titulo" {% if ordenar_por == 'titulo' %}selected{% endif %}>Titulo</option>
+            <option value="fecha_subida" {% if ordenar_por == 'fecha_subida' %}selected{% endif %}>Fecha de subida</option>
+          </select>
+          <input type="hidden" name="orden" value="{{ orden }}">
+          <button type="submit" name="toggle_order" value="{% if orden == 'asc' %}desc{% else %}asc{% endif %}" class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-4 dark:focus:ring-green-800">
+            {% if orden == 'asc' %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z"/></svg>
+            {% else %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z"/></svg>
+            {% endif %}
+          </button>
+          <button type="submit" class="font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-4 dark:focus:ring-blue-800">
+            <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20a8 8 0 1 1 8-8a8 8 0 0 1-8 8Zm0-2a6 6 0 1 0-6-6a6 6 0 0 0 6 6Zm11 2l-5-5l1.4-1.4l5 5Z"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="mt-4 mx-auto md:max-h-[48rem]">
+      {% call Table.Table(class="w-full max-w-sm mx-auto mt-8 rounded-lg p-4") %}
+      {{ Table.TableHead(["Titulo", "Fecha de subida", "Tipo", "Acciones"], class="bg-blue-200", col_class="px-6 py-3") }}
+      <tbody>
+        {% if archivos|length == 0 %}
+        <tr>
+          <td class="text-center font-medium" colspan="6">No se encontraron documentos asociados al Jinete/Amazone</td>
+        </tr>
+        {% endif %}
+        {% for a in archivos %}
+        <tr class="border-b border-gray-200 py-2">
+          <td class="text-lg px-6 py-4">{{ a.titulo }}</td>
+          <td class="text-lg px-6 py-4">{{ a.fecha_subida }}</td>
+          <td class="text-lg px-6 py-4">{{ a.tipo }}</td>
+          <td class="px-6 py-4">
+            <div class="flex gap-2">
+              {% if a.enlace == "No se subió un enlace" %}
+                {{ LinkButton.info("Descargar", url_for('jya.download_file_jya', id=a.id, filename=urllib.parse.quote(a.titulo.encode("utf-8")))) }}
+                {% if g.user_has_permissions(["jinete-y-amazona_update"]) %}
+                {{ LinkButton.info("Editar", url_for('jya.edit_file_jya', id=a.id, jya=jya, filename=urllib.parse.quote(a.titulo.encode("utf-8"))))}}
+                {% endif %}
+                {% if g.user_has_permissions(["jinete-y-amazona_destroy"]) %}
+                <form action="{{ url_for('jya.delete_file_jya', id=a.id, jya=jya) }}" method="POST" class="inline">
+                  {{ Form.new_csrf_token() }} <!-- CSRF token -->
+                  {{ Button.danger("Eliminar", "submit", class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600", **{"data-button-delete-document": "", "data-name": a.titulo}) }}
+                </form>   
+                {% endif %}
+              {% else %}
+              {{ LinkButton.info("Ir al documento", a.enlace) }}
+              {% if g.user_has_permissions(["jinete-y-amazona_update"]) %}
+              {{ LinkButton.info("Editar", url_for('jya.edit_link_jya', id=a.id, jya=jya)) }}
+              {% endif %}
+              {% if g.user_has_permissions(["jinete-y-amazona_destroy"]) %}
+              <form action="{{ url_for('jya.delete_link_jya', id=a.id, jya=jya) }}" method="POST" class="inline">
+                {{ Form.new_csrf_token() }} <!-- CSRF token -->
+                {{ Button.danger("Eliminar", "submit", class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600", **{"data-button-delete-document": "", "data-name": a.titulo}) }}
+              </form>   
+              {% endif %}
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% endcall %}
+    </div>
+  </div>
+
+</div>
+{% if total %}
+<div class="mt-5 flex-none block ">
+  {% set query_args = (["criterio=" ~ criterio] if criterio else []) + (["busqueda=" ~ busqueda] if busqueda else []) + (["ordenar_por=" ~ ordenar_por] if ordenar_por else []) + (["orden=" ~ orden] if orden else []) %}
+  {{ Pagination(page, per_page, total, query_args) }}
+</div>
+{% endif %}
+
+</main>
+<script>
+  /** @type {NodeListOf<HTMLButtonElement>} */
+  const deleteDocumentButtons = document.querySelectorAll('[data-button-delete-document]');
+
+  deleteDocumentButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const documentName = event.target.getAttribute('data-name');
+      if (!confirm(`¿Estás seguro de que quieres eliminar el documento ${documentName}?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

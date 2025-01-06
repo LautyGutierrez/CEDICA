@@ -1,0 +1,91 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title>Usuarios - CEDICA </title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex  justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Usuarios Pre-Registrados </h1>
+    </div>
+    <div class="flex  justify-center">
+      <p  class="mt-1 mb-4 mr-4 font-bold font-mono">
+          Sección de usuarios pre-registrados, aquí podrás aprobar los registros de los usuarios.
+      </p>
+    </div>
+    <div class="flex  justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {{ LinkButton.primary("Volver a inicio", "/admin/users", class="") }}
+      </div>
+  </div>
+    
+  </div>
+  <div class="flex flex-wrap justify-center">
+  </div>
+  <div class="mt-4 mx-auto md:max-h-full">
+    {% call Table.Table() %}
+    {{ Table.TableHead(("Nombre","Apellido","Email", "Fecha de Registro","Acciones")) }}
+    <tbody>
+      {% if preusers|length == 0 %}
+      <tr>
+        <td class="text-center font-semibold" colspan="8">No hay usuarios preRegistrados</td>
+      </tr>
+      {% endif %}
+      {% for user in preusers %}
+      <tr>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ user.first_name }}</p>
+        </td>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ user.last_name }}</p>
+        </td>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ user.email }}</p>
+        </td>
+
+        <td class="text-base font-medium"><p class=" flex justify-center ">{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</p></td>
+        <td>
+          <div class="flex gap-2">
+            {{ LinkButton.warning("Aprobar registrados", "/admin/users/" ~ user.id ~ "/approve_registration") }}
+
+
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% endcall %}
+  </div>
+
+  {% if total %}<div class="mt-4 flex-none">
+    {% set query_args = (["email=" ~ email] if email else []) + (["active=" ~ active] if active else []) %}
+    {{ Pagination(page, per_page, total, query_args) }}
+  </div>{% endif %}
+  <div class="mt-4 flex justify-center">
+    <p>Mostrando {{ preusers|length }} de {{ total }} usuarios pre registrados</p>
+  </div>
+</main>
+
+<script>
+  
+  const recoverUserButtons = document.querySelectorAll('[data-button-update-user]');
+
+  recoverUserButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const username = event.target.getAttribute('data-username-update');
+      
+      if (!confirm(`¿Estás seguro de que quieres aprobar la cuenta del usuario?`)) {
+        event.preventDefault(); 
+      }
+    });
+  });
+</script>
+
+{% endblock %}

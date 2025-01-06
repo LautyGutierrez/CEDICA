@@ -1,0 +1,37 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Editar contacto</title>
+{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4 text-center">Modificar Contacto</h1>
+
+
+<form action="{{ url_for('contacto.update_contacto', contacto_id=contacto_id) }}" method="POST" class="w-full max-w-sm mx-auto mt-8">
+  {{ form.hidden_tag() }}  <!-- Esto agrega el campo CSRF -->
+  
+  {% call Form.render_form(form, action=form_action) %}
+
+  <div class="flex flex-col xs:flex-row gap-4 justify-around">
+    {{ LinkButton.danger("Volver", url_for('contacto.index'), class="") }}
+    {{ Button.success("Guardar Cambios", "submit", **{"data-button-edit-file": ""}) }}
+  </div>
+  {% endcall %}
+</form>
+<script>
+  /** @type {NodeListOf<HTMLButtonElement>} */
+  const editFileButton = document.querySelectorAll('[data-button-edit-file]');
+
+  editFileButton.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      if (!confirm(`¿Estás seguro de que quieres editar el contacto?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

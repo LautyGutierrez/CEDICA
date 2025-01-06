@@ -1,0 +1,191 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/link_button.html" as LinkButton %}
+{% import "_macros/table.html" as Table %}
+{% from "_macros/pagination.html" import Pagination %}
+
+{% block head %}
+<title>Pagos - CEDICA </title>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 flex flex-col p-4">
+  <div class="flex flex-col justify-center">
+    <div class="flex  justify-center">
+      <h1 class="mt-[1em] mb-4 mr-4 text-4xl font-bold font-mono">Pagos</h1>
+
+    </div>
+    <div class="flex  justify-center">
+      <p class="mt-1 mb-4 mr-4 font-bold font-mono">
+        Sección de pagos a beneficiario.
+      </p>
+    </div>
+    <div class="flex  justify-center">
+      <div class="flex flex-wrap gap-4 mt-auto mb-4">
+        {% if g.user and g.user_has_permissions(["pagos_create"]) %}
+        {{ LinkButton.success("Registrar pago", "/pagos/register") }}
+        {% endif %}
+        {{ LinkButton.primary("Volver a inicio", "/", class="") }}
+      </div>
+    </div>
+
+  </div>
+  <div class="flex flex-wrap justify-center">
+    <form method="get" action="/pagos">
+      {{ Form.new_csrf_token() }}
+
+      <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 items-center w-full sm:w-auto">
+
+        <div class="flex flex-col items-center w-full sm:w-auto">
+          <label for="start-date" class="text-gray-700 text-sm font-medium mb-0">
+            Desde
+          </label>
+          <input type="date" id="start-date" name="start_date" value="{{ start_date }}"
+            class="w-full sm:w-auto p-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+        </div>
+
+
+        <div class="flex flex-col items-center w-full sm:w-auto">
+          <label for="end-date" class="text-gray-700 text-sm font-medium mb-0">
+            Hasta
+          </label>
+          <input type="date" id="end-date" name="end_date" value="{{ end_date }}"
+            class="w-full sm:w-auto p-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+        </div>
+
+
+        <div class="flex flex-col items-center w-full sm:w-auto">
+          <select class="rounded-lg mt-2 sm:mt-6 m-1 h-11" name="tipo_pago">
+            <option value="">Todos</option>
+            <option value="Honorarios" {% if tipo_pago=="Honorarios" %}selected{% endif %}>Honorarios</option>
+            <option value="Proveedor" {% if tipo_pago=="Proveedor" %}selected{% endif %}>Proveedor</option>
+            <option value="Gastos Varios" {% if tipo_pago=="Gastos Varios" %}selected{% endif %}>Gastos Varios</option>
+          </select>
+        </div>
+        <div class="flex flex-row items-center w-full sm:w-auto">
+          <div class="mt-0 sm:mt-5 ml-5 sm:ml-0">{{ Button.success("🔎","submit") }}</div>
+          <div class="flex flex-col items-center w-full sm:w-auto m-0 sm:m-2 ">
+            <input type="hidden" name="order" value="{{ order or 'asc' }}">
+
+            <button type="submit" name="toggle_order" value="{% if order == 'asc' %}desc{% else %}asc{% endif %}" class="mt-0 sm:mt-5 font-medium rounded-lg ml-1 text-sm px-5 py-[9px] underline-offset-2 text-white bg-green-600 hover:bg-green-700
+              focus:outline-none focus:ring-4 dark:focus:ring-green-800 ">
+              {% if order == 'asc' %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                viewBox="0 0 24 24">
+                <path fill="currentColor"
+                  d="M2 4h13v2H2zm0 7h13v2H2zm1 7H2v2h11v-2zm16 3.414l.707-.707l3-3l.707-.707L22 15.586l-.707.707L20 17.586V4h-2v13.586l-1.293-1.293l-.707-.707L14.586 17l.707.707l3 3z" />
+              </svg>
+              {% else %}
+              <svg class="inline align-middle icon-svg" xmlns="http://www.w3.org/2000/svg" width="20px" height="20px"
+                viewBox="0 0 24 24">
+                <path fill="currentColor"
+                  d="M19 2.586L23.414 7L22 8.414l-2-2V20h-2V6.414l-2 2L14.586 7zM2 4h11v2H2zm0 7h13v2H2zm0 7h13v2H2z" />
+              </svg>
+              {% endif %}
+            </button>
+          </div>
+          <div class="mt-5 ">
+          {{ LinkButton.warning("Borrar filtros", "/pagos") }}
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+    </form>
+  </div>
+  <div class="mt-4 mx-auto md:max-h-full">
+    {% call Table.Table() %}
+    {{ Table.TableHead(("Nombre del beneficiario","Apellido del beneficiario", "Email del beneficiario","Tipo de
+    Pago","Monto", "Descripcion","Fecha de Pago","Acciones")) }}
+    <tbody>
+      {% if payments|length == 0 %}
+      <tr>
+        <td class="text-center font-semibold" colspan="8">No hay pagos todavia</td>
+      </tr>
+      {% endif %}
+      {% for payment, miembro, tipo_pago in payments %}
+      <tr>
+        {% if miembro != None %}
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ miembro.nombre }}</p>
+        </td>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ miembro.apellido }}</p>
+        </td>
+        <td class="text-base font-medium">
+          <p class=" flex justify-center">{{ miembro.email }}</p>
+        </td>
+        {% else %}
+        <td class="text-base font-medium" colspan="3">
+          <p class="flex justify-center bg-yellow-100 text-yellow-700 p-2 rounded-md shadow-md">
+            No hay miembros relacionados solo en pagos honorarios
+          </p>
+        </td>
+        {% endif %}
+
+        <td class="text-base font-medium">
+          <p class=" flex justify-center ">{{ tipo_pago.name }}</p>
+        </td>
+        <td class="text-[15px] font-medium">
+          <p class="flex justify-center bg-lime-100 ring-2 ring-lime-300 rounded-md shadow-lg w-full ">
+            ${{ "{:,.2f}".format(payment.amount) }}
+          </p>
+        </td>
+        {% if payment.description != "" %}
+        <td class="text-base font-medium">
+          <p class=" flex justify-center ">{{ payment.description }}</p>
+        </td>
+        {% else %}
+        <td class="text-base font-medium">
+          <p class="text-gray-500 flex justify-center ">Sin descripcion</p>
+        </td>
+        {% endif %}
+        <td class="text-base font-medium">
+          <p class=" flex justify-center ">{{ payment.date.strftime('%d/%m/%Y %H:%M') }}</p>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            {% if g.user and g.user_has_permissions(["pagos_update"]) %}
+            {{ LinkButton.info("Editar", "/pagos/" ~ payment.id ) }}
+            {% endif %}
+            {% if g.user and g.user_has_permissions(["pagos_destroy"]) %}
+            <form method="POST" action="/pagos/{{ payment.id }}/delete" style="display: inline;">
+              {{ Form.new_csrf_token() }}
+              {% set props = {"data-button-delete-payment": "", "data-payment-amount": payment.amount,
+              "data-member-name": miembro.nombre} %}
+              {{ Button.danger("Eliminar", type="submit", **props) }}
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    {% endcall %}
+  </div>
+
+  {% if total %}<div class="mt-4 flex-none">
+    {% set query_args = (["email=" ~ email] if email else []) + (["active=" ~ active] if active else []) %}
+    {{ Pagination(page, per_page, total, query_args) }}
+  </div>{% endif %}
+</main>
+
+<script>
+
+  const deleteUserButtons = document.querySelectorAll('[data-button-delete-payment]');
+
+  deleteUserButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const amount = event.target.getAttribute('data-payment-amount');
+      const name = event.target.getAttribute('data-member-name');
+      if (!confirm(`¿Estás seguro de que quieres eliminar el pago perteneciente a ${name} con monto ${amount}?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

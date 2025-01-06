@@ -1,0 +1,55 @@
+{% extends "_layouts/app.html" %}
+{% import "_macros/form.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+{% if archivo.tipo == 'enlace' %}
+<title>Editar enlace</title>
+{% else %}
+<title>Editar archivo</title>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if archivo.tipo == 'enlace' %}
+<h1 class="text-2xl font-bold mb-4 text-center">Modificar Enlace</h1>
+{% else %}
+<h1 class="text-2xl font-bold mb-4 text-center">Modificar Archivo</h1>
+{% endif %}
+
+<form action="{{ url_for('ecuestre.update_file', file_id=archivo.id, ecuestre_id=ecuestre) }}" method="POST" class="w-full max-w-sm mx-auto mt-8" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}  <!-- Esto agrega el campo CSRF -->
+  
+  <!-- Campo Título a editar -->
+  {{ Form.render_field(form.titulo) }}
+
+  <!-- Campos ocultos con los valores actuales -->
+  {% if archivo.tipo == 'enlace' %}
+  <input type="hidden" name="enlace" value="{{ archivo.enlace }}">
+  {% endif %}
+  <input type="hidden" name="tipo_archivo" value="{{ archivo.tipo }}">
+  
+  <div class="flex flex-col xs:flex-row gap-4 justify-around">
+    {{ LinkButton.danger("Volver", url_for('ecuestre.show_files', ecuestre_id=ecuestre), class="") }}
+    {{ Button.success("Guardar Cambios", "submit", **{"data-button-edit-file": "", "data-name":  archivo.tipo }) }}
+  </div>
+  
+</form>
+<script>
+  /** @type {NodeListOf<HTMLButtonElement>} */
+  const editFileButton = document.querySelectorAll('[data-button-edit-file]');
+
+  editFileButton.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      let archivo = event.target.getAttribute('data-name');
+      if (archivo === 'ficha')
+        archivo = 'archivo';
+
+      if (!confirm(`¿Estás seguro de que quieres editar el ${archivo} ?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

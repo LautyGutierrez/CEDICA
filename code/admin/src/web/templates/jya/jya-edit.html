@@ -1,0 +1,41 @@
+{% extends '_layouts/auth.html' %}
+{% import "_macros/formCuadrado.html" as Form %}
+{% import "_macros/button.html" as Button %}
+{% import "_macros/link_button.html" as LinkButton %}
+
+{% block head %}
+<title>Editar JyA</title>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center mt-10">
+  <h1 class="text-3xl font-bold text-center mb-2">Modificar Jinetes/Amazonas</h1>
+  <div class="flex flex-col items-center md:basis-1/2 shadow-2xl rounded-3xl">
+      <form method="POST" action="{{ url_for('jya.update_jya', id=jya.id) }}"
+          class="flex flex-col gap-2 p-4 md:gap-4 md:mt-4">
+          {{ Form.render_fields(form, longitud)}}
+          {{ Button.success("Editar","submit", **{"data-button-edit-jya": ""})}}
+          {{ LinkButton.info("Volver", "/jya-list") }}
+      </form>
+  </div>
+</div>
+<style>
+  label[for="csrf_token"] {
+      display: none;
+  }
+</style>
+
+<script>
+  const editJyAButtons = document.querySelectorAll('[data-button-edit-jya]');
+
+  editJyAButtons.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      const jyaName = event.target.getAttribute('data-name');
+      if (!confirm(`¿Estás seguro de que quieres editar al jinete/amazonas?`)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>
+
+{% endblock %}
